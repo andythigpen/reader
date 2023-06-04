@@ -1,49 +1,58 @@
-use axum::body::{boxed, Body};
-use axum::http::{Response, StatusCode};
-use axum::{response::IntoResponse, routing::get, Router};
-use clap::Parser;
-use std::net::{IpAddr, Ipv6Addr, SocketAddr};
-use std::path::PathBuf;
-use std::str::FromStr;
+use std::{
+    env,
+    net::{IpAddr, Ipv6Addr, SocketAddr},
+    path::PathBuf,
+    str::FromStr,
+};
+
+use axum::{
+    body::{boxed, Body},
+    http::{Response, StatusCode},
+    routing::get,
+    Router,
+};
+use sea_orm::{Database, DatabaseConnection};
 use tokio::fs;
 use tower::{ServiceBuilder, ServiceExt};
-use tower_http::services::ServeDir;
-use tower_http::trace::TraceLayer;
+use tower_http::{services::ServeDir, trace::TraceLayer};
 
-// Setup the command line interface with clap.
-#[derive(Parser, Debug)]
-#[clap(name = "server", about = "A server for the reader application")]
-struct Opt {
-    #[clap(short = 'l', long = "log", default_value = "debug")]
-    log_level: String,
-
-    #[clap(short = 'a', long = "addr", default_value = "::1")]
-    addr: String,
-
-    #[clap(short = 'p', long = "port", default_value = "8080")]
-    port: u16,
-
-    #[clap(long = "static-dir", default_value = "./dist")]
-    static_dir: String,
+#[derive(Clone)]
+struct AppState {
+    conn: DatabaseConnection,
 }
 
-#[tokio::main]
-async fn main() {
-    let opt = Opt::parse();
+pub async fn run_server() {
+    dotenvy::dotenv().ok();
 
-    if std::env::var("RUST_LOG").is_err() {
-        std::env::set_var("RUST_LOG", format!("{},hyper=info,mio=info", opt.log_level))
+    let db_url = env::var("DATABASE_URL").unwrap_or("sqlite://reader.db?mode=rwc".to_string());
+    let static_dir = env::var("STATIC_DIR").unwrap_or("./dist".to_string());
+    let addr = env::var("ADDR").unwrap_or("::1".to_string());
+    let port: u16 = env::var("PORT")
+        .unwrap_or("8080".to_string())
+        .parse()
+        .unwrap();
+    let log_level = env::var("LOG_LEVEL").unwrap_or("debug".to_string());
+    if env::var("RUST_LOG").is_err() {
+        env::set_var("RUST_LOG", format!("{},hyper=info,mio=info", log_level))
     }
+
     tracing_subscriber::fmt::init();
+
+    let conn = Database::connect(db_url)
+        .await
+        .expect("Database connection failed");
+    // TODO: Migrator::up(&conn, None).await.unwrap();
+
+    let state = AppState { conn };
+
     let app = Router::new()
-        .route("/api/hello", get(hello))
         .fallback_service(get(|req| async move {
-            match ServeDir::new(&opt.static_dir).oneshot(req).await {
+            match ServeDir::new(&static_dir).oneshot(req).await {
                 Ok(res) => {
                     let status = res.status();
                     match status {
                         StatusCode::NOT_FOUND => {
-                            let index_path = PathBuf::from(&opt.static_dir).join("index.html");
+                            let index_path = PathBuf::from(&static_dir).join("index.html");
                             let index_content = match fs::read_to_string(index_path).await {
                                 Err(_) => {
                                     return Response::builder()
@@ -67,11 +76,12 @@ async fn main() {
                     .expect("error response"),
             }
         }))
-        .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()));
+        .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()))
+        .with_state(state);
 
     let sock_addr = SocketAddr::from((
-        IpAddr::from_str(opt.addr.as_str()).unwrap_or(IpAddr::V6(Ipv6Addr::LOCALHOST)),
-        opt.port,
+        IpAddr::from_str(addr.as_str()).unwrap_or(IpAddr::V6(Ipv6Addr::LOCALHOST)),
+        port,
     ));
 
     log::info!("listening on http://{}", sock_addr);
@@ -80,8 +90,4 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .expect("Unable to start server");
-}
-
-async fn hello() -> impl IntoResponse {
-    "hello from server!"
 }
