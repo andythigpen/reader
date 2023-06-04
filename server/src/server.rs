@@ -16,6 +16,8 @@ use tokio::fs;
 use tower::{ServiceBuilder, ServiceExt};
 use tower_http::{services::ServeDir, trace::TraceLayer};
 
+use migration::{Migrator, MigratorTrait};
+
 #[derive(Clone)]
 struct AppState {
     conn: DatabaseConnection,
@@ -41,7 +43,7 @@ pub async fn run_server() {
     let conn = Database::connect(db_url)
         .await
         .expect("Database connection failed");
-    // TODO: Migrator::up(&conn, None).await.unwrap();
+    Migrator::up(&conn, None).await.unwrap();
 
     let state = AppState { conn };
 
