@@ -122,10 +122,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.71"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9c7d0618f0e0b7e8ff11427422b64564d5fb0be1940354bfe2e0529b18a9d9b8"
+
+[[package]]
 name = "anymap2"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d301b3b94cb4b2f23d7917810addbbaff90738e0ca2be692bd027e70d7e0330c"
+
+[[package]]
+name = "api"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "clap 4.3.1",
+ "entity",
+ "log",
+ "migration",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "service",
+ "tokio",
+ "tower",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+]
 
 [[package]]
 name = "arrayvec"
@@ -2371,19 +2398,17 @@ dependencies = [
 name = "server"
 version = "0.1.0"
 dependencies = [
- "axum",
- "clap 4.3.1",
+ "api",
  "dotenvy",
+]
+
+[[package]]
+name = "service"
+version = "0.1.0"
+dependencies = [
  "entity",
- "log",
- "migration",
  "sea-orm",
  "serde",
- "tokio",
- "tower",
- "tower-http",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]
@@ -2770,6 +2795,7 @@ dependencies = [
  "pin-project",
  "pin-project-lite",
  "tokio",
+ "tokio-util",
  "tower-layer",
  "tower-service",
  "tracing",

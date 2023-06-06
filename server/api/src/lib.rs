@@ -1,15 +1,23 @@
+mod error;
+pub mod rss_feed;
+
 use std::{
+    borrow::Cow,
     env,
     net::{IpAddr, Ipv6Addr, SocketAddr},
     path::PathBuf,
     str::FromStr,
+    sync::Arc,
+    time::Duration,
 };
 
 use axum::{
     body::{boxed, Body},
+    error_handling::HandleErrorLayer,
     http::{Response, StatusCode},
+    response::IntoResponse,
     routing::get,
-    Router,
+    BoxError, Router,
 };
 use sea_orm::{Database, DatabaseConnection};
 use tokio::fs;
@@ -18,14 +26,33 @@ use tower_http::{services::ServeDir, trace::TraceLayer};
 
 use migration::{Migrator, MigratorTrait};
 
+use anyhow::Result;
+
 #[derive(Clone)]
-struct AppState {
-    conn: DatabaseConnection,
+pub struct AppState {
+    pub conn: DatabaseConnection,
 }
 
-pub async fn run_server() {
-    dotenvy::dotenv().ok();
+async fn handle_error(error: BoxError) -> impl IntoResponse {
+    if error.is::<tower::timeout::error::Elapsed>() {
+        return (StatusCode::REQUEST_TIMEOUT, Cow::from("request timed out"));
+    }
 
+    if error.is::<tower::load_shed::error::Overloaded>() {
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Cow::from("service is overloaded, try again later"),
+        );
+    }
+
+    (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        Cow::from(format!("Unhandled internal error: {}", error)),
+    )
+}
+
+#[tokio::main]
+async fn start() -> Result<()> {
     let db_url = env::var("DATABASE_URL").unwrap_or("sqlite://reader.db?mode=rwc".to_string());
     let static_dir = env::var("STATIC_DIR").unwrap_or("./dist".to_string());
     let addr = env::var("ADDR").unwrap_or("::1".to_string());
@@ -45,7 +72,7 @@ pub async fn run_server() {
         .expect("Database connection failed");
     Migrator::up(&conn, None).await.unwrap();
 
-    let state = AppState { conn };
+    let state = Arc::new(AppState { conn });
 
     let app = Router::new()
         .fallback_service(get(|req| async move {
@@ -78,8 +105,15 @@ pub async fn run_server() {
                     .expect("error response"),
             }
         }))
+        .layer(
+            ServiceBuilder::new()
+                .layer(HandleErrorLayer::new(handle_error))
+                .load_shed()
+                .concurrency_limit(1024)
+                .timeout(Duration::from_secs(10)),
+        )
         .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()))
-        .with_state(state);
+        .nest("/api/rss_feeds", rss_feed::router(state.clone()));
 
     let sock_addr = SocketAddr::from((
         IpAddr::from_str(addr.as_str()).unwrap_or(IpAddr::V6(Ipv6Addr::LOCALHOST)),
@@ -92,4 +126,13 @@ pub async fn run_server() {
         .serve(app.into_make_service())
         .await
         .expect("Unable to start server");
+
+    Ok(())
+}
+
+pub fn main() {
+    let result = start();
+    if let Some(err) = result.err() {
+        println!("error: {err}");
+    }
 }

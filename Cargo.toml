@@ -1,2 +1,9 @@
 [workspace]
-members = ["server", "frontend"]
+members = [
+    "frontend",
+    "server",
+    "server/api",
+    "server/entity",
+    "server/migration",
+    "server/service"
+]
