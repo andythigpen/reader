@@ -1,63 +1,75 @@
 use anyhow::Result;
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     routing::get,
     Json, Router,
 };
+use serde::Deserialize;
 use std::sync::Arc;
 
 use entity::rss_feed;
 
 use crate::{error::RestError, AppState};
 
-async fn list(State(state): State<Arc<AppState>>) -> Result<Json<Vec<rss_feed::Model>>, RestError> {
-    Ok(vec![].into())
+// TODO: move to common
+#[derive(Deserialize)]
+struct Pagination {
+    #[serde(default = "default_page")]
+    page: u64,
+    #[serde(default = "default_per_page")]
+    per_page: u64,
 }
 
-async fn create(State(state): State<Arc<AppState>>) -> Result<Json<rss_feed::Model>, RestError> {
-    // TODO
-    Ok(rss_feed::Model {
-        id: "id".to_string(),
-        name: "name".to_string(),
-        description: "description".to_string(),
-        url: "url".to_string(),
-    }
-    .into())
+fn default_page() -> u64 {
+    0
+}
+
+fn default_per_page() -> u64 {
+    10
+}
+
+async fn list(
+    State(state): State<Arc<AppState>>,
+    pagination: Query<Pagination>,
+) -> Result<Json<Vec<rss_feed::Model>>, RestError> {
+    let page =
+        service::rss_feed::list_by_page(&state.conn, pagination.page, pagination.per_page).await?;
+    Ok(page.into())
+}
+
+async fn create(
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<rss_feed::Model>,
+) -> Result<Json<rss_feed::Model>, RestError> {
+    let model = service::rss_feed::create(&state.conn, body).await?;
+    Ok(model.into())
 }
 
 async fn retrieve(
     Path(id): Path<String>,
     State(state): State<Arc<AppState>>,
 ) -> Result<Json<rss_feed::Model>, RestError> {
-    // TODO
-    Ok(rss_feed::Model {
-        id: "id".to_string(),
-        name: "name".to_string(),
-        description: "description".to_string(),
-        url: "url".to_string(),
+    let model = service::rss_feed::find_by_id(&state.conn, &id).await?;
+    match model {
+        Some(m) => Ok(m.into()),
+        None => Err(RestError::NotFound(format!("RSS feed '{}' not found", id))),
     }
-    .into())
 }
 
 async fn update(
     Path(id): Path<String>,
     State(state): State<Arc<AppState>>,
+    Json(body): Json<rss_feed::Model>,
 ) -> Result<Json<rss_feed::Model>, RestError> {
-    // TODO
-    Ok(rss_feed::Model {
-        id: "id".to_string(),
-        name: "name".to_string(),
-        description: "description".to_string(),
-        url: "url".to_string(),
-    }
-    .into())
+    let model = service::rss_feed::update_by_id(&state.conn, &id, body).await?;
+    Ok(model.into())
 }
 
 async fn delete(
     Path(id): Path<String>,
     State(state): State<Arc<AppState>>,
 ) -> Result<(), RestError> {
-    // TODO
+    service::rss_feed::delete_by_id(&state.conn, &id).await?;
     Ok(())
 }
 

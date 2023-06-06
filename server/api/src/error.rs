@@ -43,3 +43,9 @@ impl From<serde_json::Error> for RestError {
         Self::Invalid(err.to_string())
     }
 }
+
+impl From<sea_orm::DbErr> for RestError {
+    fn from(err: sea_orm::DbErr) -> Self {
+        Self::Internal(err.into())
+    }
+}
