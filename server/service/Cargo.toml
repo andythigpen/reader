@@ -9,6 +9,7 @@ name = "service"
 path = "src/lib.rs"
 
 [dependencies]
+anyhow = "1.0.71"
 entity = { path = "../entity" }
 log = "0.4.18"
 nanoid = "0.4.0"

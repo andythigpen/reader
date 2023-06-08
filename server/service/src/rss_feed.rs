@@ -1,5 +1,7 @@
-use entity::{rss_feed, rss_feed::Entity as RSSFeed};
+use anyhow::Result;
+use entity::{article, rss_feed, rss_feed::Entity as RSSFeed};
 use nanoid::nanoid;
+use rss::Channel;
 use sea_orm::{ActiveModelTrait, DbConn, DbErr, EntityTrait, PaginatorTrait, QueryOrder, Set};
 
 pub async fn create(db: &DbConn, data: rss_feed::Model) -> Result<rss_feed::Model, DbErr> {
@@ -51,4 +53,23 @@ pub async fn delete_by_id(db: &DbConn, id: &str) -> Result<(), DbErr> {
         .map(Into::into)?;
     rss_feed.delete(db).await?;
     Ok(())
+}
+
+pub async fn fetch_articles(db: &DbConn, id: &str) -> Result<Vec<article::Model>> {
+    let rss_feed = find_by_id(db, id)
+        .await?
+        .ok_or(DbErr::Custom("Cannot find RSS feed.".to_owned()))?;
+
+    let content = reqwest::get(rss_feed.url).await?.bytes().await?;
+    let channel = Channel::read_from(&content[..])?;
+    Ok(channel
+        .items()
+        .iter()
+        .map(|it| article::Model {
+            id: nanoid!(),
+            title: it.title().unwrap_or("").to_owned(),
+            url: it.link().unwrap_or("").to_owned(),
+            description: it.description().unwrap_or("").to_owned(),
+        })
+        .collect())
 }

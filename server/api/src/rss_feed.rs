@@ -7,7 +7,7 @@ use axum::{
 use serde::Deserialize;
 use std::sync::Arc;
 
-use entity::rss_feed;
+use entity::{article, rss_feed};
 
 use crate::{error::RestError, AppState};
 
@@ -73,9 +73,18 @@ async fn delete(
     Ok(())
 }
 
+async fn fetch_articles(
+    Path(id): Path<String>,
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<Vec<article::Model>>, RestError> {
+    let resp = service::rss_feed::fetch_articles(&state.conn, &id).await?;
+    Ok(resp.into())
+}
+
 pub fn router(state: Arc<AppState>) -> Router {
     Router::new()
         .route("/", get(list).post(create))
         .route("/:id", get(retrieve).put(update).delete(delete))
+        .route("/:id/fetch", get(fetch_articles))
         .with_state(state)
 }
