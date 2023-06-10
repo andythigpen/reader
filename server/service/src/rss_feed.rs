@@ -64,6 +64,7 @@ pub async fn delete_by_id(db: &DbConn, id: &str) -> Result<(), DbErr> {
     Ok(())
 }
 
+// TODO: move to article service mod
 async fn save_article(db: &DbConn, rss_feed_id: &str, item: &Item) -> Result<article::Model> {
     let norm = UrlNormalizer::default();
     let link = item.link().unwrap_or("");
@@ -98,7 +99,6 @@ pub async fn fetch_articles(db: &DbConn, id: &str) -> Result<Vec<article::Model>
 
     let content = reqwest::get(rss_feed.url).await?.bytes().await?;
     let channel = Channel::read_from(&content[..])?;
-    // let norm = UrlNormalizer::default();
 
     future::try_join_all(
         channel
@@ -107,23 +107,4 @@ pub async fn fetch_articles(db: &DbConn, id: &str) -> Result<Vec<article::Model>
             .map(|it| async { save_article(db, id, it).await }),
     )
     .await
-
-    // channel
-    //     .items()
-    //     .iter()
-    //     .map(|it| async { save_article(db, id, it).await })
-    //     // .map(|it| -> Result<article::Model> {
-    //     //     let link = it.link().unwrap_or("");
-    //     //     let url = Url::parse(link)?;
-    //     //     Ok(article::Model {
-    //     //         id: nanoid!(),
-    //     //         title: it.title().unwrap_or("").to_owned(),
-    //     //         url: it.link().unwrap_or("").to_owned(),
-    //     //         normalized_url: norm.compute_normalization_string(&url),
-    //     //         description: it.description().unwrap_or("").to_owned(),
-    //     //         created_at: OffsetDateTime::now_utc().format(&Iso8601::DEFAULT).unwrap(),
-    //     //         rss_feed_id: id.to_owned(),
-    //     //     })
-    //     // })
-    //     .collect()
 }

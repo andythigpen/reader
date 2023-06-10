@@ -4,29 +4,11 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
-use serde::Deserialize;
 use std::sync::Arc;
 
 use entity::{article, rss_feed};
 
-use crate::{error::RestError, AppState};
-
-// TODO: move to common
-#[derive(Deserialize)]
-struct Pagination {
-    #[serde(default = "default_page")]
-    page: u64,
-    #[serde(default = "default_per_page")]
-    per_page: u64,
-}
-
-fn default_page() -> u64 {
-    0
-}
-
-fn default_per_page() -> u64 {
-    10
-}
+use crate::{error::RestError, pagination::Pagination, AppState};
 
 async fn list(
     State(state): State<Arc<AppState>>,
@@ -49,11 +31,10 @@ async fn retrieve(
     Path(id): Path<String>,
     State(state): State<Arc<AppState>>,
 ) -> Result<Json<rss_feed::Model>, RestError> {
-    let model = service::rss_feed::find_by_id(&state.conn, &id).await?;
-    match model {
-        Some(m) => Ok(m.into()),
-        None => Err(RestError::NotFound(format!("RSS feed '{}' not found", id))),
-    }
+    let model = service::rss_feed::find_by_id(&state.conn, &id)
+        .await?
+        .ok_or(RestError::NotFound(format!("RSS feed '{}' not found", id)))?;
+    Ok(model.into())
 }
 
 async fn update(

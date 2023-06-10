@@ -1,5 +1,7 @@
+mod article;
 mod error;
-pub mod rss_feed;
+mod pagination;
+mod rss_feed;
 
 use std::{
     borrow::Cow,
@@ -113,6 +115,7 @@ async fn start() -> Result<()> {
                 .timeout(Duration::from_secs(10)),
         )
         .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()))
+        .nest("/api/articles", article::router(state.clone()))
         .nest("/api/rss_feeds", rss_feed::router(state.clone()));
 
     let sock_addr = SocketAddr::from((
