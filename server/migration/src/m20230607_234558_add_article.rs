@@ -27,6 +27,13 @@ impl MigrationTrait for Migration {
                             .default(""),
                     )
                     .col(ColumnDef::new(Article::CreatedAt).date_time().not_null())
+                    .col(ColumnDef::new(Article::RssFeedId).string().not_null())
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk_article_rss_feed")
+                            .from(Article::Table, Article::RssFeedId)
+                            .to(RSSFeed::Table, RSSFeed::Id),
+                    )
                     .to_owned(),
             )
             .await?;
@@ -59,6 +66,12 @@ impl MigrationTrait for Migration {
 }
 
 #[derive(Iden)]
+enum RSSFeed {
+    Table,
+    Id,
+}
+
+#[derive(Iden)]
 enum Article {
     Table,
     Id,
@@ -67,4 +80,5 @@ enum Article {
     NormalizedUrl,
     Description,
     CreatedAt,
+    RssFeedId,
 }
