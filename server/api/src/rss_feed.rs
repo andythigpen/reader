@@ -1,7 +1,7 @@
 use anyhow::Result;
 use axum::{
     extract::{Path, Query, State},
-    routing::get,
+    routing::{get, post},
     Json, Router,
 };
 use serde::Deserialize;
@@ -85,6 +85,6 @@ pub fn router(state: Arc<AppState>) -> Router {
     Router::new()
         .route("/", get(list).post(create))
         .route("/:id", get(retrieve).put(update).delete(delete))
-        .route("/:id/fetch", get(fetch_articles))
+        .route("/:id/fetch", post(fetch_articles))
         .with_state(state)
 }

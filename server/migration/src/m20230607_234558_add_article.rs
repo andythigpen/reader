@@ -25,6 +25,7 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default(""),
                     )
+                    .col(ColumnDef::new(Article::CreatedAt).date_time().not_null())
                     .to_owned(),
             )
             .await
@@ -44,4 +45,5 @@ enum Article {
     Title,
     URL,
     Description,
+    CreatedAt,
 }

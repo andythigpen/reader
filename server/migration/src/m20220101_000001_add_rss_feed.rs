@@ -25,6 +25,7 @@ impl MigrationTrait for Migration {
                             .default(""),
                     )
                     .col(ColumnDef::new(RSSFeed::Url).string().not_null())
+                    .col(ColumnDef::new(RSSFeed::CreatedAt).date_time().not_null())
                     .to_owned(),
             )
             .await
@@ -44,4 +45,5 @@ enum RSSFeed {
     Name,
     Description,
     Url,
+    CreatedAt,
 }

@@ -1,18 +1,21 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use entity::{article, rss_feed, rss_feed::Entity as RSSFeed};
 use nanoid::nanoid;
 use rss::Channel;
 use sea_orm::{ActiveModelTrait, DbConn, DbErr, EntityTrait, PaginatorTrait, QueryOrder, Set};
+use time::{format_description::well_known::Iso8601, OffsetDateTime};
 
-pub async fn create(db: &DbConn, data: rss_feed::Model) -> Result<rss_feed::Model, DbErr> {
+pub async fn create(db: &DbConn, data: rss_feed::Model) -> Result<rss_feed::Model> {
     rss_feed::ActiveModel {
         id: Set(nanoid!().to_owned()),
         name: Set(data.name.to_owned()),
         description: Set(data.description.to_owned()),
         url: Set(data.url.to_owned()),
+        created_at: Set(OffsetDateTime::now_utc().format(&Iso8601::DEFAULT)?),
     }
     .insert(db)
     .await
+    .map_err(|e| anyhow!(e))
 }
 
 pub async fn find_by_id(db: &DbConn, id: &str) -> Result<Option<rss_feed::Model>, DbErr> {
@@ -70,6 +73,7 @@ pub async fn fetch_articles(db: &DbConn, id: &str) -> Result<Vec<article::Model>
             title: it.title().unwrap_or("").to_owned(),
             url: it.link().unwrap_or("").to_owned(),
             description: it.description().unwrap_or("").to_owned(),
+            created_at: OffsetDateTime::now_utc().format(&Iso8601::DEFAULT).unwrap(),
         })
         .collect())
 }

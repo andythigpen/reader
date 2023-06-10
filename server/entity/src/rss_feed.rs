@@ -12,6 +12,8 @@ pub struct Model {
     pub name: String,
     pub description: String,
     pub url: String,
+    #[serde(skip_deserializing)]
+    pub created_at: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
