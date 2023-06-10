@@ -11,6 +11,8 @@ pub struct Model {
     pub id: String,
     pub title: String,
     pub url: String,
+    #[serde(skip_deserializing)]
+    pub normalized_url: String,
     pub description: String,
     #[serde(skip_deserializing)]
     pub created_at: String,

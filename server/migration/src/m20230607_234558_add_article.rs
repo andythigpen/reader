@@ -18,7 +18,8 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(Article::Title).string().not_null())
-                    .col(ColumnDef::new(Article::URL).string().not_null())
+                    .col(ColumnDef::new(Article::Url).string().not_null())
+                    .col(ColumnDef::new(Article::NormalizedUrl).string().not_null())
                     .col(
                         ColumnDef::new(Article::Description)
                             .string()
@@ -28,10 +29,29 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Article::CreatedAt).date_time().not_null())
                     .to_owned(),
             )
+            .await?;
+
+        manager
+            .create_index(
+                Index::create()
+                    .name("idx_article_normalized_url")
+                    .table(Article::Table)
+                    .col(Article::NormalizedUrl)
+                    .to_owned(),
+            )
             .await
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .drop_index(
+                Index::drop()
+                    .name("idx_article_normalized_url")
+                    .table(Article::Table)
+                    .to_owned(),
+            )
+            .await?;
+
         manager
             .drop_table(Table::drop().table(Article::Table).to_owned())
             .await
@@ -43,7 +63,8 @@ enum Article {
     Table,
     Id,
     Title,
-    URL,
+    Url,
+    NormalizedUrl,
     Description,
     CreatedAt,
 }
