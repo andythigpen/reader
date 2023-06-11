@@ -1,4 +1,3 @@
-// use entity::article::Model;
 use stores::article::ArticleStore;
 use yew::prelude::*;
 use yew::Properties;
@@ -6,7 +5,6 @@ use yewdux::prelude::*;
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
-    // pub article: Model,
     pub index: usize,
 }
 
