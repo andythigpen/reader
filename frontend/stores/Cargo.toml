@@ -9,5 +9,7 @@ path = "src/lib.rs"
 
 [dependencies]
 entity = { path = "../../entity" }
+gloo-net = "0.2.6"
+wasm-bindgen-futures = "0.4.36"
 yew = { version = "0.20.0", features = ["csr"] }
 yewdux = "0.9.3"
