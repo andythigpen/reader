@@ -3,6 +3,8 @@ use gloo_net::http::Request;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
+use crate::article::Article;
+
 #[function_component(ArticleList)]
 pub fn article_list() -> Html {
     let data = use_state(|| None);
@@ -12,7 +14,10 @@ pub fn article_list() -> Html {
         use_effect(move || {
             if data.is_none() {
                 spawn_local(async move {
-                    let resp = Request::get("/api/articles").send().await.unwrap();
+                    let resp = Request::get("/api/articles?per_page=50")
+                        .send()
+                        .await
+                        .unwrap();
                     let result: Result<Vec<Model>, String> = {
                         if !resp.ok() {
                             Err(format!(
@@ -35,7 +40,7 @@ pub fn article_list() -> Html {
     let articles = match data.as_ref() {
         None => html! { <div>{"Loading..."}</div> },
         Some(Ok(data)) => {
-            html! { <div>{for data.iter().map(|it|  it.title.to_owned() )}</div> }
+            html! { <div>{for data.iter().map(|it| html! { <Article article={it.clone()} /> } )}</div> }
         }
         Some(Err(err)) => html! { <div>{err}</div> },
     };
@@ -43,7 +48,6 @@ pub fn article_list() -> Html {
     html! {
         <div>
             {articles}
-            // <Article />
         </div>
     }
 }
