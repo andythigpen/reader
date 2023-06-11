@@ -1,20 +1,28 @@
 use entity::article::Model;
 use gloo_net::http::Request;
+use stores::article::ArticleStore;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
+use yewdux::prelude::*;
 
 use crate::article::Article;
 
 #[function_component(ArticleList)]
 pub fn article_list() -> Html {
-    let data = use_state(|| None);
+    let per_page = use_state(|| 20u64);
+    let page = use_state(|| 1u64);
+    let loaded = use_state(|| false);
+    let (store, dispatch) = use_store::<ArticleStore>();
 
     {
-        let data = data.clone();
         use_effect(move || {
-            if data.is_none() {
+            if !*loaded {
                 spawn_local(async move {
-                    let resp = Request::get("/api/articles?per_page=50")
+                    let resp = Request::get("/api/articles")
+                        .query([
+                            ("page", page.to_string()),
+                            ("per_page", per_page.to_string()),
+                        ])
                         .send()
                         .await
                         .unwrap();
@@ -29,25 +37,16 @@ pub fn article_list() -> Html {
                             resp.json().await.map_err(|err| err.to_string())
                         }
                     };
-                    data.set(Some(result));
-                })
+                    if let Ok(mut articles) = result {
+                        dispatch.reduce_mut(|s| s.articles.append(&mut articles));
+                    }
+                    loaded.set(true);
+                });
             }
-
-            || {}
         });
     }
 
-    let articles = match data.as_ref() {
-        None => html! { <div>{"Loading..."}</div> },
-        Some(Ok(data)) => {
-            html! { <div>{for data.iter().map(|it| html! { <Article article={it.clone()} /> } )}</div> }
-        }
-        Some(Err(err)) => html! { <div>{err}</div> },
-    };
-
     html! {
-        <div>
-            {articles}
-        </div>
+        for store.articles.iter().enumerate().map(|(idx, _)| html! { <Article index={idx} /> })
     }
 }

@@ -10,9 +10,11 @@ path = "src/lib.rs"
 [dependencies]
 console_error_panic_hook = "0.1.7"
 gloo-net = "0.2.6"
-entity = { path = "../../entity"}
+entity = { path = "../../entity" }
 log = "0.4.18"
+stores = { path = "../stores" }
 wasm-bindgen-futures = "0.4.36"
 wasm-logger = "0.2.0"
 yew = { version = "0.20.0", features = ["csr"] }
 yew-router = "0.17.0"
+yewdux = "0.9.3"

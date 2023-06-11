@@ -2,6 +2,8 @@
 members = [
     "entity",
     "frontend",
+    "frontend/components",
+    "frontend/stores",
     "server",
     "server/api",
     "server/migration",
