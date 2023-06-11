@@ -15,9 +15,11 @@ pub fn article(props: &Props) -> Html {
     let (store, _) = use_store::<ArticleStore>();
     let article = &store.articles[props.index];
     html! {
-        <article>
-            <h2>{article.title.clone()}</h2>
-            <p>{article.description.clone()}</p>
+        <article class={classes!("m-2", "dark:text-slate-400")}>
+            <a href={article.url.clone()}>
+                <h2 class={classes!("text-lg", "dark:text-white")}>{article.title.clone()}</h2>
+                <p>{article.description.clone()}</p>
+            </a>
         </article>
     }
 }

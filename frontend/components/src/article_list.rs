@@ -47,6 +47,9 @@ pub fn article_list() -> Html {
     }
 
     html! {
-        for store.articles.iter().enumerate().map(|(idx, _)| html! { <Article index={idx} /> })
+        <div class={classes!("flex", "flex-col", "max-w-4xl", "container",
+                             "rounded-lg", "dark:bg-slate-800")}>
+            {for store.articles.iter().enumerate().map(|(idx, _)| html! { <Article index={idx} /> })}
+        </div>
     }
 }
