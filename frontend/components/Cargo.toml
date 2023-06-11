@@ -1,14 +1,16 @@
 [package]
-name = "frontend"
+name = "components"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "components"
+path = "src/lib.rs"
 
 [dependencies]
-components = { path = "./components" }
 console_error_panic_hook = "0.1.7"
 gloo-net = "0.2.6"
+entity = { path = "../../server/entity"}
 log = "0.4.18"
 wasm-bindgen-futures = "0.4.36"
 wasm-logger = "0.2.0"
