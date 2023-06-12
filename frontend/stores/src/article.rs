@@ -1,9 +1,11 @@
 use entity::article::Model as Article;
 use gloo_net::http::Request;
+use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use yewdux::{log::info, prelude::*};
 
-#[derive(Debug, Clone, PartialEq, Eq, Store)]
+#[derive(Debug, Clone, PartialEq, Eq, Store, Serialize, Deserialize)]
+#[store(storage = "session")]
 pub struct ArticleStore {
     pub articles: Vec<Article>,
     // true when a fetch is currently in progress
