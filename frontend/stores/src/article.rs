@@ -33,6 +33,8 @@ impl ArticleStore {
             info!("fetching={} at_end={}", self.fetching, self.at_end);
             return;
         }
+        let dispatch = Dispatch::<ArticleStore>::new();
+        dispatch.reduce_mut(|s| s.fetching = true);
         let page = self.page;
         let per_page = self.per_page;
         spawn_local(async move {
