@@ -22,7 +22,7 @@ impl Default for ArticleStore {
             fetching: false,
             at_end: false,
             per_page: 20,
-            page: 1,
+            page: 0,
         }
     }
 }
