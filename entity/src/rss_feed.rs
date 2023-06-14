@@ -12,6 +12,8 @@ pub struct Model {
     pub description: String,
     pub url: String,
     pub created_at: String,
+    pub updated_at: String,
+    pub display_description: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

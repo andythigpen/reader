@@ -17,6 +17,7 @@ pub struct CreateModel {
     pub name: String,
     pub description: String,
     pub url: String,
+    pub display_description: bool,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -24,15 +25,19 @@ pub struct UpdateModel {
     pub name: String,
     pub description: String,
     pub url: String,
+    pub display_description: bool,
 }
 
 pub async fn create(db: &DbConn, data: CreateModel) -> Result<rss_feed::Model> {
+    let now = OffsetDateTime::now_utc().format(&Iso8601::DEFAULT)?;
     rss_feed::ActiveModel {
         id: Set(nanoid!().to_owned()),
         name: Set(data.name.to_owned()),
         description: Set(data.description.to_owned()),
         url: Set(data.url.to_owned()),
-        created_at: Set(OffsetDateTime::now_utc().format(&Iso8601::DEFAULT)?),
+        created_at: Set(now.to_owned()),
+        updated_at: Set(now.to_owned()),
+        display_description: Set(data.display_description),
     }
     .insert(db)
     .await
@@ -49,17 +54,13 @@ pub async fn list_by_page(
     per_page: u64,
 ) -> Result<Vec<rss_feed::Model>, DbErr> {
     RSSFeed::find()
-        .order_by_asc(rss_feed::Column::Id)
+        .order_by_desc(rss_feed::Column::CreatedAt)
         .paginate(db, per_page)
         .fetch_page(page)
         .await
 }
 
-pub async fn update_by_id(
-    db: &DbConn,
-    id: &str,
-    data: UpdateModel,
-) -> Result<rss_feed::Model, DbErr> {
+pub async fn update_by_id(db: &DbConn, id: &str, data: UpdateModel) -> Result<rss_feed::Model> {
     let mut rss_feed: rss_feed::ActiveModel = find_by_id(db, id)
         .await?
         .ok_or(DbErr::Custom("Cannot find RSS feed.".to_owned()))
@@ -67,7 +68,10 @@ pub async fn update_by_id(
     rss_feed.name = Set(data.name.to_owned());
     rss_feed.description = Set(data.description.to_owned());
     rss_feed.url = Set(data.url.to_owned());
-    rss_feed.update(db).await
+    let now = OffsetDateTime::now_utc().format(&Iso8601::DEFAULT)?;
+    rss_feed.updated_at = Set(now.to_owned());
+    rss_feed.display_description = Set(data.display_description);
+    rss_feed.update(db).await.map_err(|e| anyhow!(e))
 }
 
 pub async fn delete_by_id(db: &DbConn, id: &str) -> Result<(), DbErr> {
