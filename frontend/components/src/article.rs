@@ -14,8 +14,20 @@ pub struct Props {
 pub fn article(&Props { id }: &Props) -> Html {
     let store = use_store_value::<ArticleStore>();
     let article = &store.articles[id];
+    let classes = classes!(
+        "flex",
+        "flex-row",
+        "my-2",
+        "dark:text-slate-400",
+        "dark:dark:bg-slate-800",
+        "items-center",
+        "justify-between",
+        "w-full",
+        "rounded-2xl",
+        "p-3",
+    );
     html! {
-        <article class={classes!("flex", "flex-row", "my-2", "dark:text-slate-400", "items-center")}>
+        <article class={classes}>
             <a href={article.url.clone()} class={classes!("flex-1")}>
                 <h2 class={classes!("text-lg", "dark:text-white")}>
                     {article.title.clone()}

@@ -16,8 +16,33 @@ pub fn header() -> Html {
             }
         })
     });
+    let classes = classes!(
+        "flex",
+        "flex-row",
+        "dark:text-white",
+        "dark:bg-slate-950",
+        "w-full",
+        "max-w-5xl",
+        "p-1",
+        "items-center",
+        "sticky",
+        "top-0",
+        "relative",
+        // inverted border below
+        "before:content-['']",
+        "before:bg-transparent",
+        "before:rounded-t-lg",
+        "before:absolute",
+        "before:max-w-5xl",
+        "before:w-full",
+        "before:inset-x-0",
+        "before:-bottom-6",
+        "before:h-6",
+        "before:shadow-[0px_-5px_0px_0px]",
+        "before:shadow-slate-950",
+    );
     html! {
-        <div class={classes!("flex", "flex-row", "dark:text-white", "w-full", "max-w-4xl", "m-1", "items-center")}>
+        <div class={classes}>
             <IconRss class={classes!("inline", "mx-2")}/>
             <div class={classes!("flex-1")}>
                 {"Reader"}

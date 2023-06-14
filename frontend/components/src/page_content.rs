@@ -8,10 +8,19 @@ pub struct Props {
 
 #[function_component(PageContent)]
 pub fn page_content(Props { children }: &Props) -> Html {
+    let classes = classes!(
+        "flex-grow",
+        "flex",
+        "flex-col",
+        "w-full",
+        "lg:max-w-5xl",
+        "rounded-b-lg",
+        "dark:bg-slate-900",
+        "px-4",
+        "py-2",
+    );
     html! {
-        <div class={classes!(
-            "flex-grow", "flex", "flex-col", "max-w-4xl", "container", "rounded-lg", "dark:bg-slate-800", "px-4", "py-2"
-        )}>
+        <div class={classes}>
             { for children.iter() }
         </div>
     }
