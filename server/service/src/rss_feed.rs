@@ -8,10 +8,25 @@ use sea_orm::{
     ActiveModelTrait, ColumnTrait, DbConn, DbErr, EntityTrait, PaginatorTrait, QueryFilter,
     QueryOrder, QuerySelect, Set,
 };
+use serde::{Deserialize, Serialize};
 use time::{format_description::well_known::Iso8601, OffsetDateTime};
 use urlnorm::UrlNormalizer;
 
-pub async fn create(db: &DbConn, data: rss_feed::Model) -> Result<rss_feed::Model> {
+#[derive(Serialize, Deserialize)]
+pub struct CreateModel {
+    pub name: String,
+    pub description: String,
+    pub url: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct UpdateModel {
+    pub name: String,
+    pub description: String,
+    pub url: String,
+}
+
+pub async fn create(db: &DbConn, data: CreateModel) -> Result<rss_feed::Model> {
     rss_feed::ActiveModel {
         id: Set(nanoid!().to_owned()),
         name: Set(data.name.to_owned()),
@@ -43,7 +58,7 @@ pub async fn list_by_page(
 pub async fn update_by_id(
     db: &DbConn,
     id: &str,
-    data: rss_feed::Model,
+    data: UpdateModel,
 ) -> Result<rss_feed::Model, DbErr> {
     let mut rss_feed: rss_feed::ActiveModel = find_by_id(db, id)
         .await?

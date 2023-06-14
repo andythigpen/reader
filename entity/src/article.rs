@@ -7,14 +7,11 @@ use serde::{Deserialize, Serialize};
 #[sea_orm(table_name = "article")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    #[serde(skip_deserializing)]
     pub id: String,
     pub title: String,
     pub url: String,
-    #[serde(skip_deserializing)]
     pub normalized_url: String,
     pub description: String,
-    #[serde(skip_deserializing)]
     pub created_at: String,
     pub rss_feed_id: String,
 }

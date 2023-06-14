@@ -19,7 +19,7 @@ pub fn article(&Props { id }: &Props) -> Html {
         "flex-row",
         "my-2",
         "dark:text-slate-400",
-        "dark:dark:bg-slate-800",
+        "dark:bg-slate-800",
         "items-center",
         "justify-between",
         "w-full",

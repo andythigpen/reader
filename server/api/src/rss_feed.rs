@@ -21,7 +21,7 @@ async fn list(
 
 async fn create(
     State(state): State<Arc<AppState>>,
-    Json(body): Json<rss_feed::Model>,
+    Json(body): Json<service::rss_feed::CreateModel>,
 ) -> Result<Json<rss_feed::Model>, RestError> {
     let model = service::rss_feed::create(&state.conn, body).await?;
     Ok(model.into())
@@ -40,7 +40,7 @@ async fn retrieve(
 async fn update(
     Path(id): Path<String>,
     State(state): State<Arc<AppState>>,
-    Json(body): Json<rss_feed::Model>,
+    Json(body): Json<service::rss_feed::UpdateModel>,
 ) -> Result<Json<rss_feed::Model>, RestError> {
     let model = service::rss_feed::update_by_id(&state.conn, &id, body).await?;
     Ok(model.into())

@@ -33,7 +33,9 @@ pub fn rss_feed_list() -> Html {
     let rss_feeds = rss_feeds
         .iter()
         .enumerate()
-        .map(|(id, _)| html! { <RssFeed key={id} /> })
+        .map(|(id, model)| {
+            html! { <RssFeed key={id} model={model.clone()}/> }
+        })
         .collect::<Html>();
 
     html! {
