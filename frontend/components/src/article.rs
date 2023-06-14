@@ -5,15 +5,15 @@ use yewdux::prelude::*;
 
 use crate::icons::arrow_top_right::IconArrowTopRight;
 
-#[derive(Properties, PartialEq)]
+#[derive(Properties, PartialEq, Clone)]
 pub struct Props {
-    pub index: usize,
+    pub id: usize,
 }
 
 #[function_component(Article)]
-pub fn article(props: &Props) -> Html {
-    let (store, _) = use_store::<ArticleStore>();
-    let article = &store.articles[props.index];
+pub fn article(&Props { id }: &Props) -> Html {
+    let store = use_store_value::<ArticleStore>();
+    let article = &store.articles[id];
     html! {
         <article class={classes!("flex", "flex-row", "m-2", "dark:text-slate-400", "items-center")}>
             <a href={article.url.clone()} class={classes!("flex-1")}>

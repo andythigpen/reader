@@ -62,9 +62,16 @@ async fn fetch_articles(
     Ok(resp.into())
 }
 
+async fn fetch_all(State(state): State<Arc<AppState>>) -> Result<(), RestError> {
+    service::rss_feed::fetch_all_articles(&state.conn)
+        .await
+        .map_err(|err| RestError::Internal(err))
+}
+
 pub fn router(state: Arc<AppState>) -> Router {
     Router::new()
         .route("/", get(list).post(create))
+        .route("/fetch", post(fetch_all))
         .route("/:id", get(retrieve).put(update).delete(delete))
         .route("/:id/fetch", post(fetch_articles))
         .with_state(state)

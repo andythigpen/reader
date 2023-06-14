@@ -6,7 +6,7 @@ use reqwest::Url;
 use rss::{Channel, Item};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, DbConn, DbErr, EntityTrait, PaginatorTrait, QueryFilter,
-    QueryOrder, Set,
+    QueryOrder, QuerySelect, Set,
 };
 use time::{format_description::well_known::Iso8601, OffsetDateTime};
 use urlnorm::UrlNormalizer;
@@ -107,4 +107,17 @@ pub async fn fetch_articles(db: &DbConn, id: &str) -> Result<Vec<article::Model>
             .map(|it| async { save_article(db, id, it).await }),
     )
     .await
+}
+
+pub async fn fetch_all_articles(db: &DbConn) -> Result<()> {
+    let rss_feeds: Vec<(String,)> = RSSFeed::find()
+        .select_only()
+        .columns([rss_feed::Column::Id])
+        .into_tuple()
+        .all(db)
+        .await?;
+
+    future::try_join_all(rss_feeds.iter().map(|(id,)| fetch_articles(db, id))).await?;
+
+    Ok(())
 }

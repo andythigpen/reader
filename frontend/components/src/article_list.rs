@@ -1,5 +1,6 @@
 use stores::article::ArticleStore;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen_futures::spawn_local;
 use web_sys::{
     HtmlDivElement, IntersectionObserver, IntersectionObserverEntry, IntersectionObserverInit,
 };
@@ -10,14 +11,13 @@ use crate::article::Article;
 
 #[function_component(ArticleList)]
 pub fn article_list() -> Html {
-    let (store, dispatch) = use_store::<ArticleStore>();
+    let store = use_store_value::<ArticleStore>();
 
     let node = use_node_ref();
 
     use_effect_with_deps(
         {
             let node = node.clone();
-            let dispatch = dispatch.clone();
             move |_| {
                 let mut cb = None;
                 if let Some(elem) = node.cast::<HtmlDivElement>() {
@@ -27,7 +27,13 @@ pub fn article_list() -> Html {
                         move |entries, _observer| {
                             if let Some(entry) = entries.first() {
                                 if entry.is_intersecting() {
-                                    dispatch.reduce_mut(|s| s.fetch());
+                                    spawn_local(async move {
+                                        Dispatch::<ArticleStore>::new()
+                                            .reduce_mut_future(|s| {
+                                                Box::pin(async move { s.fetch().await })
+                                            })
+                                            .await;
+                                    });
                                 }
                             }
                         },
@@ -46,11 +52,18 @@ pub fn article_list() -> Html {
         node.clone(),
     );
 
+    let articles = store
+        .articles
+        .iter()
+        .enumerate()
+        .map(|(id, _)| html! { <Article key={id} {id} /> })
+        .collect::<Html>();
+
     html! {
         <div class={classes!(
             "flex-grow", "flex", "flex-col", "max-w-4xl", "container", "rounded-lg", "dark:bg-slate-800"
         )}>
-            {for store.articles.iter().enumerate().map(|(idx, _)| html! { <Article key={idx} index={idx} /> })}
+            { articles }
             <div ref={node}></div>
         </div>
     }

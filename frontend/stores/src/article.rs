@@ -1,8 +1,7 @@
 use entity::article::Model as Article;
 use gloo_net::http::Request;
 use serde::{Deserialize, Serialize};
-use wasm_bindgen_futures::spawn_local;
-use yewdux::{log::info, prelude::*};
+use yewdux::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Eq, Store, Serialize, Deserialize)]
 #[store(storage = "session")]
@@ -30,45 +29,49 @@ impl Default for ArticleStore {
 }
 
 impl ArticleStore {
-    pub fn fetch(&mut self) {
+    pub async fn reload(&mut self) {
+        self.articles.clear();
+        self.fetching = false;
+        self.at_end = false;
+        self.page = 0;
+        self.fetch().await;
+    }
+
+    pub async fn fetch(&mut self) {
         if self.fetching || self.at_end {
-            info!("fetching={} at_end={}", self.fetching, self.at_end);
             return;
         }
-        let dispatch = Dispatch::<ArticleStore>::new();
-        dispatch.reduce_mut(|s| s.fetching = true);
+
+        Dispatch::<ArticleStore>::new().reduce_mut(|s| s.fetching = true);
+
         let page = self.page;
         let per_page = self.per_page;
-        spawn_local(async move {
-            let dispatch = Dispatch::<ArticleStore>::new();
-            let resp = Request::get("/api/articles")
-                .query([
-                    ("page", page.to_string()),
-                    ("per_page", per_page.to_string()),
-                ])
-                .send()
-                .await
-                .unwrap();
-            let result: Result<Vec<Article>, String> = {
-                if !resp.ok() {
-                    Err(format!(
-                        "Error fetching data {} ({})",
-                        resp.status(),
-                        resp.status_text()
-                    ))
-                } else {
-                    resp.json().await.map_err(|err| err.to_string())
-                }
-            };
-            if let Ok(mut articles) = result {
-                dispatch.reduce_mut(|s| {
-                    s.page += 1;
-                    let len = articles.len();
-                    s.at_end = len as u64 != per_page;
-                    s.articles.append(&mut articles);
-                    s.fetching = false;
-                });
+
+        let resp = Request::get("/api/articles")
+            .query([
+                ("page", page.to_string()),
+                ("per_page", per_page.to_string()),
+            ])
+            .send()
+            .await
+            .unwrap();
+        let result: Result<Vec<Article>, String> = {
+            if !resp.ok() {
+                Err(format!(
+                    "Error fetching data {} ({})",
+                    resp.status(),
+                    resp.status_text()
+                ))
+            } else {
+                resp.json().await.map_err(|err| err.to_string())
             }
-        });
+        };
+        if let Ok(mut articles) = result {
+            self.page += 1;
+            let len = articles.len();
+            self.at_end = len as u64 != per_page;
+            self.articles.append(&mut articles);
+        }
+        self.fetching = false;
     }
 }
