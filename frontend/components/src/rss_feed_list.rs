@@ -4,7 +4,7 @@ use yew::prelude::*;
 
 use entity::rss_feed::Model;
 
-use crate::rss_feed::RssFeed;
+use crate::{icons::plus::IconPlus, rss_feed::RssFeed};
 
 #[function_component(RssFeedList)]
 pub fn rss_feed_list() -> Html {
@@ -40,6 +40,13 @@ pub fn rss_feed_list() -> Html {
 
     html! {
         <>
+            <div class={classes!("flex", "flex-row", "justify-between", "items-center")}>
+                <h2 class={classes!("flex-1", "text-xl")}>{"RSS Feeds"}</h2>
+                <button class={classes!("flex", "flex-row", "bg-sky-500", "py-2", "px-4", "rounded-xl", "font-semibold", "gap-1")}>
+                    <IconPlus />
+                    {"Add"}
+                </button>
+            </div>
             { rss_feeds }
         </>
     }

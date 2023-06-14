@@ -34,8 +34,8 @@ pub fn rss_feed(props: &Props) -> Html {
                 <p>{model.description}</p>
                 <p>{model.url}</p>
             </div>
-            <IconPencilSquare class={classes!("mx-2")} />
-            <IconTrash class={classes!("mx-2")} />
+            <IconPencilSquare class={classes!("cursor-pointer", "mx-2")} />
+            <IconTrash class={classes!("cursor-pointer", "mx-2")} />
         </div>
     }
 }

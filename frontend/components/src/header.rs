@@ -43,9 +43,11 @@ pub fn header() -> Html {
     );
     html! {
         <div class={classes}>
-            <IconRss class={classes!("inline", "mx-2")}/>
             <div class={classes!("flex-1")}>
-                {"Reader"}
+                <a href="/">
+                    <IconRss class={classes!("inline", "mx-2")}/>
+                    {"Reader"}
+                </a>
             </div>
             <div {onclick}>
                 <IconArrowPath class={classes!("mx-2", "cursor-pointer")}/>
