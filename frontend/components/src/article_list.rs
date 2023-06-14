@@ -60,11 +60,9 @@ pub fn article_list() -> Html {
         .collect::<Html>();
 
     html! {
-        <div class={classes!(
-            "flex-grow", "flex", "flex-col", "max-w-4xl", "container", "rounded-lg", "dark:bg-slate-800"
-        )}>
+        <>
             { articles }
             <div ref={node}></div>
-        </div>
+        </>
     }
 }

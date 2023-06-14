@@ -15,7 +15,7 @@ pub fn article(&Props { id }: &Props) -> Html {
     let store = use_store_value::<ArticleStore>();
     let article = &store.articles[id];
     html! {
-        <article class={classes!("flex", "flex-row", "m-2", "dark:text-slate-400", "items-center")}>
+        <article class={classes!("flex", "flex-row", "my-2", "dark:text-slate-400", "items-center")}>
             <a href={article.url.clone()} class={classes!("flex-1")}>
                 <h2 class={classes!("text-lg", "dark:text-white")}>
                     {article.title.clone()}

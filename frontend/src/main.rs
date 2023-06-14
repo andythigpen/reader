@@ -1,19 +1,21 @@
-// use gloo_net::http::Request;
-// use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
 use pages::home::Home;
+use pages::rss_feeds::RssFeeds;
 
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
     #[at("/")]
     Home,
+    #[at("/rss_feeds")]
+    RssFeeds,
 }
 
 fn switch(routes: Route) -> Html {
     match routes {
         Route::Home => html! { <Home /> },
+        Route::RssFeeds => html! { <RssFeeds /> },
     }
 }
 
