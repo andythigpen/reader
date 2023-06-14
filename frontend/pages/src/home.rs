@@ -1,8 +1,8 @@
 use yew::prelude::*;
 
-use crate::article_list::ArticleList;
-use crate::footer::Footer;
-use crate::header::Header;
+use components::article_list::ArticleList;
+use components::footer::Footer;
+use components::header::Header;
 
 #[function_component(Home)]
 pub fn home() -> Html {

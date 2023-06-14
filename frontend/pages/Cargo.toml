@@ -1,0 +1,12 @@
+[package]
+name = "pages"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "pages"
+path = "src/lib.rs"
+
+[dependencies]
+components = { path = "../components" }
+yew = { version = "0.20.0", features = ["csr"] }
