@@ -8,6 +8,7 @@ use yew::prelude::*;
 use yewdux::prelude::*;
 
 use crate::article::Article;
+use crate::list_item::ListItem;
 
 #[function_component(ArticleList)]
 pub fn article_list() -> Html {
@@ -52,12 +53,18 @@ pub fn article_list() -> Html {
         node.clone(),
     );
 
-    let articles = store
-        .articles
-        .iter()
-        .enumerate()
-        .map(|(id, _)| html! { <Article key={id} {id} /> })
-        .collect::<Html>();
+    let articles = if store.articles.is_empty() {
+        html! {
+            <ListItem>{"No articles found."}</ListItem>
+        }
+    } else {
+        store
+            .articles
+            .iter()
+            .enumerate()
+            .map(|(id, _)| html! { <Article key={id} {id} /> })
+            .collect::<Html>()
+    };
 
     html! {
         <>

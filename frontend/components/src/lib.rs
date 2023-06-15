@@ -3,6 +3,7 @@ pub mod article_list;
 pub mod footer;
 pub mod header;
 pub mod icons;
+pub mod list_item;
 pub mod page_container;
 pub mod page_content;
 pub mod rss_feed;
