@@ -4,3 +4,4 @@ pub mod pencil_square;
 pub mod plus;
 pub mod rss;
 pub mod trash;
+pub mod x_mark;
