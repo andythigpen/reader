@@ -1,31 +1,28 @@
 use gloo_net::http::Request;
+use stores::rss_feed::RssFeedStore;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
+use yewdux::prelude::*;
 
-use entity::rss_feed::Model;
-
+use crate::button::Button;
 use crate::list_item::ListItem;
 use crate::modal::Modal;
+use crate::rss_feed_form::{ModalAction, RssFeedForm};
 use crate::{icons::plus::IconPlus, rss_feed::RssFeed};
 
 #[function_component(RssFeedList)]
 pub fn rss_feed_list() -> Html {
-    let rss_feeds = use_state(|| vec![]);
-    let display_modal = use_state(|| true);
+    let rss_feeds = use_selector(|s: &RssFeedStore| s.rss_feeds.clone());
+    let display_modal = use_state(|| false);
+    let edit_model = use_state(|| None);
 
     {
-        let rss_feeds = rss_feeds.clone();
         use_effect_with_deps(
             move |_| {
                 spawn_local(async move {
-                    let fetched: Vec<Model> = Request::get("/api/rss_feeds")
-                        .send()
-                        .await
-                        .unwrap()
-                        .json()
-                        .await
-                        .unwrap();
-                    rss_feeds.set(fetched);
+                    Dispatch::<RssFeedStore>::new()
+                        .reduce_mut_future(|s| Box::pin(async move { s.fetch().await }))
+                        .await;
                 });
                 || ()
             },
@@ -41,83 +38,53 @@ pub fn rss_feed_list() -> Html {
         rss_feeds
             .iter()
             .enumerate()
-            .map(|(id, model)| {
-                html! { <RssFeed key={id} model={model.clone()}/> }
+            .map(|(id, _)| {
+                html! { <RssFeed key={id} {id} /> }
             })
             .collect::<Html>()
     };
 
-    let onclick = {
+    let add_rss_feed = {
         let display_modal = display_modal.clone();
         Callback::from(move |_| display_modal.set(true))
     };
 
-    let onclose = {
+    let close_modal = {
         let display_modal = display_modal.clone();
         Callback::from(move |_| display_modal.set(false))
     };
 
+    let close_form = {
+        let display_modal = display_modal.clone();
+        Callback::from(move |action| match action {
+            ModalAction::Close => display_modal.set(false),
+            ModalAction::Confirm(model) => {
+                display_modal.set(false);
+                spawn_local(async move {
+                    let resp = Request::post("/api/rss_feeds")
+                        .json(&model)
+                        .unwrap()
+                        .send()
+                        .await
+                        .unwrap();
+                    let model = resp.json().await.unwrap();
+                    Dispatch::<RssFeedStore>::new().reduce_mut(|s| s.rss_feeds.insert(0, model));
+                });
+            }
+        })
+    };
+
     html! {
         <>
-            <Modal display={*display_modal} {onclose}>
-                <h1>{"Add RSS Feed"}</h1>
-
-                <label for="name">{"Name"}</label>
-                <input name="name" class={classes!(
-                    "mb-5", "mt-2", "text-gray-600", "focus:outline-none", "focus:border",
-                    "focus:border-indigo-700", "font-normal", "w-full", "h-10", "flex",
-                    "items-center", "pl-3", "text-sm", "border-gray-300", "rounded", "border"
-                )} placeholder={"Name"} />
-
-                <label for="description">{"Description"}</label>
-                <input name="description" class={classes!(
-                    "mb-5", "mt-2", "text-gray-600", "focus:outline-none", "focus:border",
-                    "focus:border-indigo-700", "font-normal", "w-full", "h-10", "flex",
-                    "items-center", "pl-3", "text-sm", "border-gray-300", "rounded", "border"
-                )} placeholder={"Description"} />
-
-                <label for="url">{"URL"}</label>
-                <input name="url" class={classes!(
-                    "mb-5", "mt-2", "text-gray-600", "focus:outline-none", "focus:border",
-                    "focus:border-indigo-700", "font-normal", "w-full", "h-10", "flex",
-                    "items-center", "pl-3", "text-sm", "border-gray-300", "rounded", "border"
-                )} placeholder={"URL"} />
-
-                <div class={classes!("mb-4")}>
-                    <input name="display_description" type="checkbox" class={classes!(
-                        "appearance-none", "w-9", "focus:outline-none", "checked:bg-blue-300", "h-5",
-                        "bg-gray-300", "rounded-full", "before:inline-block", "before:rounded-full",
-                        "before:bg-blue-500", "before:h-4", "before:w-4", "checked:before:translate-x-full",
-                        "shadow-inner", "transition-all", "duration-300", "before:ml-0.5",
-                        "mr-4"
-                    )} />
-                    <label for="display_description">{"Display description underneath articles"}</label>
-                </div>
-
-                <div class={classes!("flex", "flex-row", "justify-end", "gap-1")}>
-                    <button class={classes!(
-                        "flex", "flex-row", "bg-gray-500", "hover:bg-gray-400", "transition-colors",
-                        "py-2", "px-4", "rounded-xl", "font-semibold", "gap-1"
-                    )}>
-                        {"Cancel"}
-                    </button>
-                    <button class={classes!(
-                        "flex", "flex-row", "bg-sky-500", "hover:bg-sky-400", "transition-colors",
-                        "py-2", "px-4", "rounded-xl", "font-semibold", "gap-1"
-                    )}>
-                        {"Add"}
-                    </button>
-                </div>
+            <Modal display={*display_modal} onclose={close_modal}>
+                <RssFeedForm model={(*edit_model).to_owned()} onclose={close_form} />
             </Modal>
             <div class={classes!("flex", "flex-row", "justify-between", "items-center")}>
                 <h2 class={classes!("flex-1", "text-xl")}>{"RSS Feeds"}</h2>
-                <button {onclick} class={classes!(
-                    "flex", "flex-row", "bg-sky-500", "hover:bg-sky-400", "transition-colors",
-                    "py-2", "px-4", "rounded-xl", "font-semibold", "gap-1"
-                )}>
+                <Button onclick={add_rss_feed} primary=true>
                     <IconPlus />
                     {"Add"}
-                </button>
+                </Button>
             </div>
             { rss_feeds }
         </>

@@ -3,14 +3,7 @@ use yew_router::prelude::*;
 
 use pages::home::Home;
 use pages::rss_feeds::RssFeeds;
-
-#[derive(Clone, Routable, PartialEq)]
-enum Route {
-    #[at("/")]
-    Home,
-    #[at("/rss_feeds")]
-    RssFeeds,
-}
+use router::Route;
 
 fn switch(routes: Route) -> Html {
     match routes {
@@ -20,7 +13,7 @@ fn switch(routes: Route) -> Html {
 }
 
 #[function_component(App)]
-fn app() -> Html {
+pub fn app() -> Html {
     html! {
         <BrowserRouter>
             <Switch<Route> render={switch} />

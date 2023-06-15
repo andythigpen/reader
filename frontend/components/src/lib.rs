@@ -1,11 +1,15 @@
 pub mod article;
 pub mod article_list;
+pub mod button;
 pub mod footer;
 pub mod header;
 pub mod icons;
+pub mod input_checkbox;
+pub mod input_text;
 pub mod list_item;
 pub mod modal;
 pub mod page_container;
 pub mod page_content;
 pub mod rss_feed;
+pub mod rss_feed_form;
 pub mod rss_feed_list;

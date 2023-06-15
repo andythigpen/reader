@@ -11,7 +11,7 @@ pub struct Props {
     pub display: bool,
 
     #[prop_or_default]
-    pub onclose: Callback<()>,
+    pub onclose: Callback<MouseEvent>,
 }
 
 #[function_component(Modal)]
@@ -27,12 +27,12 @@ pub fn modal(
     }
 
     let onclose = onclose.clone();
-    let onclick = Callback::from(move |_| onclose.emit(()));
+    let onclick = Callback::from(move |e| onclose.emit(e));
 
     html! {
         <div class={classes!(
             "py-12", "bg-gray-800/75", "transition", "duration-150", "ease-in-out",
-            "z-10", "absolute", "top-0", "right-0", "bottom-0", "left-0",
+            "z-10", "absolute", "top-0", "right-0", "bottom-0", "left-0", "dark:text-white"
         )}>
             <div class={classes!("container", "mx-auto", "w-11/12", "md:w-2/3", "max-w-lg", "z-10")}>
                 <div class={classes!(

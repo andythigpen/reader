@@ -1,0 +1,12 @@
+[package]
+name = "router"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "router"
+path = "src/lib.rs"
+
+[dependencies]
+yew = { version = "0.20.0", features = ["csr"] }
+yew-router = "0.17.0"
