@@ -27,6 +27,8 @@ impl MigrationTrait for Migration {
                             .default(""),
                     )
                     .col(ColumnDef::new(Article::CreatedAt).date_time().not_null())
+                    .col(ColumnDef::new(Article::PubDate).date_time().not_null())
+                    .col(ColumnDef::new(Article::CommentsUrl).string())
                     .col(ColumnDef::new(Article::RssFeedId).string().not_null())
                     .foreign_key(
                         ForeignKey::create()
@@ -78,7 +80,9 @@ enum Article {
     Title,
     Url,
     NormalizedUrl,
+    CommentsUrl,
     Description,
     CreatedAt,
+    PubDate,
     RssFeedId,
 }

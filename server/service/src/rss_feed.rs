@@ -9,8 +9,13 @@ use sea_orm::{
     QueryOrder, QuerySelect, Set,
 };
 use serde::{Deserialize, Serialize};
-use time::{format_description::well_known::Iso8601, OffsetDateTime};
+use time::{
+    format_description::well_known::Iso8601, format_description::well_known::Rfc2822,
+    OffsetDateTime,
+};
 use urlnorm::UrlNormalizer;
+
+use crate::article as article_service;
 
 #[derive(Serialize, Deserialize)]
 pub struct CreateModel {
@@ -74,7 +79,8 @@ pub async fn update_by_id(db: &DbConn, id: &str, data: UpdateModel) -> Result<rs
     rss_feed.update(db).await.map_err(|e| anyhow!(e))
 }
 
-pub async fn delete_by_id(db: &DbConn, id: &str) -> Result<(), DbErr> {
+pub async fn delete_by_id(db: &DbConn, id: &str) -> Result<()> {
+    article_service::delete_by_rss_feed_id(db, id).await?;
     let rss_feed: rss_feed::ActiveModel = find_by_id(db, id)
         .await?
         .ok_or(DbErr::Custom("Cannot find RSS feed.".to_owned()))
@@ -84,7 +90,12 @@ pub async fn delete_by_id(db: &DbConn, id: &str) -> Result<(), DbErr> {
 }
 
 // TODO: move to article service mod
-async fn save_article(db: &DbConn, rss_feed_id: &str, item: &Item) -> Result<article::Model> {
+async fn save_article(
+    db: &DbConn,
+    rss_feed_id: &str,
+    save_description: bool,
+    item: &Item,
+) -> Result<article::Model> {
     let norm = UrlNormalizer::default();
     let link = item.link().unwrap_or("");
     let url = Url::parse(link)?;
@@ -97,13 +108,28 @@ async fn save_article(db: &DbConn, rss_feed_id: &str, item: &Item) -> Result<art
         // already exists
         return Ok(article);
     }
+    let description = if save_description {
+        item.description().unwrap_or("").to_owned()
+    } else {
+        "".to_owned()
+    };
+    let created_at = OffsetDateTime::now_utc().format(&Iso8601::DEFAULT).unwrap();
+    let pub_date = match item.pub_date() {
+        Some(d) => OffsetDateTime::parse(d, &Rfc2822)
+            .unwrap()
+            .format(&Iso8601::DEFAULT)
+            .unwrap(),
+        None => created_at.to_owned(),
+    };
     article::ActiveModel {
         id: Set(nanoid!()),
         title: Set(item.title().unwrap_or("").to_owned()),
         url: Set(item.link().unwrap_or("").to_owned()),
         normalized_url: Set(normalized_url),
-        description: Set(item.description().unwrap_or("").to_owned()),
-        created_at: Set(OffsetDateTime::now_utc().format(&Iso8601::DEFAULT).unwrap()),
+        comments_url: Set(item.comments.to_owned()),
+        description: Set(description),
+        created_at: Set(created_at),
+        pub_date: Set(pub_date),
         rss_feed_id: Set(rss_feed_id.to_owned()),
     }
     .insert(db)
@@ -123,7 +149,7 @@ pub async fn fetch_articles(db: &DbConn, id: &str) -> Result<Vec<article::Model>
         channel
             .items()
             .iter()
-            .map(|it| async { save_article(db, id, it).await }),
+            .map(|it| async { save_article(db, id, rss_feed.display_description, it).await }),
     )
     .await
 }

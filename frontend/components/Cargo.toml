@@ -14,7 +14,7 @@ entity = { path = "../../entity" }
 log = "0.4.18"
 router = { path = "../router" }
 stores = { path = "../stores" }
-time = { version = "0.3.22", features = ["parsing"] }
+time = { version = "0.3.22", features = ["formatting", "parsing"] }
 wasm-bindgen-futures = "0.4.36"
 wasm-logger = "0.2.0"
 yew = { version = "0.20.0", features = ["csr"] }

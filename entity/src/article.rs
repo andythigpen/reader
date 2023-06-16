@@ -13,6 +13,8 @@ pub struct Model {
     pub normalized_url: String,
     pub description: String,
     pub created_at: String,
+    pub pub_date: String,
+    pub comments_url: Option<String>,
     pub rss_feed_id: String,
 }
 
@@ -23,7 +25,7 @@ pub enum Relation {
         from = "Column::RssFeedId",
         to = "super::rss_feed::Column::Id",
         on_update = "NoAction",
-        on_delete = "NoAction"
+        on_delete = "Cascade"
     )]
     RssFeed,
 }
