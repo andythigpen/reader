@@ -1,5 +1,6 @@
 use gloo_net::http::Request;
 use stores::article::ArticleStore;
+use web_sys::window;
 use yew::prelude::*;
 use yewdux::prelude::*;
 
@@ -13,6 +14,7 @@ pub fn header() -> Html {
             let resp = Request::post("/api/rss_feeds/fetch").send().await.unwrap();
             if resp.status() == 200 {
                 state.reload().await;
+                window().unwrap().scroll_with_x_and_y(0.0, 0.0);
             }
         })
     });
