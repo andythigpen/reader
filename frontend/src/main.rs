@@ -1,6 +1,7 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
 
+use pages::categories::Categories;
 use pages::home::Home;
 use pages::rss_feeds::RssFeeds;
 use router::Route;
@@ -9,6 +10,7 @@ fn switch(routes: Route) -> Html {
     match routes {
         Route::Home => html! { <Home /> },
         Route::RssFeeds => html! { <RssFeeds /> },
+        Route::Categories => html! { <Categories /> },
     }
 }
 

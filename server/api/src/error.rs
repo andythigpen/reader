@@ -8,7 +8,6 @@ use serde_json::json;
 #[derive(Debug)]
 pub enum RestError {
     NotFound(String),
-    Conflict,
     Invalid(String),
     Internal(anyhow::Error),
 }
@@ -19,7 +18,6 @@ impl IntoResponse for RestError {
 
         let (status, error_message) = match self {
             RestError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
-            RestError::Conflict => (StatusCode::CONFLICT, String::from("object was modified")),
             RestError::Invalid(msg) => (StatusCode::BAD_REQUEST, msg),
             RestError::Internal(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
         };

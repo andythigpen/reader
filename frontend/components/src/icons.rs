@@ -1,5 +1,6 @@
 pub mod arrow_path;
 pub mod arrow_top_right;
+pub mod bars_3;
 pub mod chat_bubble_left_ellipsis;
 pub mod chevron_down;
 pub mod pencil_square;

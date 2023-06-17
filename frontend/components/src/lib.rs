@@ -1,6 +1,9 @@
 pub mod article;
 pub mod article_list;
 pub mod button;
+pub mod category;
+pub mod category_form;
+pub mod category_list;
 pub mod footer;
 pub mod header;
 pub mod icons;

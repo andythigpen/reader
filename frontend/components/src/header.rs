@@ -1,10 +1,12 @@
 use gloo_net::http::Request;
+use router::Route;
 use stores::article::ArticleStore;
 use web_sys::window;
 use yew::prelude::*;
+use yew_router::prelude::*;
 use yewdux::prelude::*;
 
-use crate::icons::{arrow_path::IconArrowPath, chevron_down::IconChevronDown, rss::IconRss};
+use crate::icons::{bars_3::IconBars3, rss::IconRss};
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
@@ -52,16 +54,16 @@ pub fn header(Props { children }: &Props) -> Html {
     html! {
         <div class={classes}>
             <div class={classes!("flex-0")}>
-                <a href="/">
+                <Link<Route> to={Route::Home}>
                     <IconRss class={classes!("inline", "mx-2")}/>
                     {"Reader"}
-                </a>
+                </Link<Route>>
             </div>
             <div class={classes!("flex", "flex-col", "flex-1", "relative", "items-center")}>
                 {for children.iter()}
             </div>
             <div {onclick}>
-                <IconArrowPath class={classes!("mx-2", "cursor-pointer")}/>
+                <IconBars3 class={classes!("mx-2", "cursor-pointer")}/>
             </div>
         </div>
     }

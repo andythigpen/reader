@@ -1,4 +1,4 @@
-use stores::rss_feed::RssFeedStore;
+use stores::{category::CategoryStore, rss_feed::RssFeedStore};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
 use web_sys::{window, NavigationType, PerformanceNavigationTiming};
@@ -46,10 +46,20 @@ pub fn home() -> Html {
                 Dispatch::<RssFeedStore>::new()
                     .reduce_mut_future(|s| Box::pin(async move { s.fetch().await }))
                     .await;
+                Dispatch::<CategoryStore>::new()
+                    .reduce_mut_future(|s| Box::pin(async move { s.fetch().await }))
+                    .await;
             })
         },
         (),
     );
+
+    let categories = use_selector(|s: &CategoryStore| s.categories.clone());
+    let menu = categories.iter().map(|c| html!{ 
+        <li>
+            <a href="#" class="block px-8 sm:px-4 py-4 hover:bg-slate-100 dark:hover:bg-slate-600 dark:hover:text-white">{c.name.clone()}</a>
+        </li>
+    }).collect::<Html>();
 
     html! {
         <PageContainer>
@@ -58,20 +68,12 @@ pub fn home() -> Html {
                     {"All"}
                     <IconChevronDown/>
                 </div>
-                <div class="hidden fixed sm:absolute left-0 sm:left-auto top-6 z-10 bg-white divide-y divide-gray-100 rounded-b-lg shadow-2xl w-full sm:w-64 dark:bg-slate-950">
-                    <ul class="py-2 text-gray-700 dark:text-gray-200">
+                <div class={classes!("hidden", "fixed", "sm:absolute", "left-0", "sm:left-auto", "top-6", "z-10", "bg-white", "divide-y", "divide-gray-100", "rounded-b-lg", "shadow-2xl", "w-full", "sm:w-64", "dark:bg-slate-950")}>
+                    <ul class={classes!("py-2", "text-gray-700", "dark:text-gray-200")}>
                         <li>
                             <a href="#" class="block px-8 sm:px-4 py-4 hover:bg-slate-100 dark:hover:bg-slate-600 dark:hover:text-white">{"All"}</a>
                         </li>
-                        <li>
-                            <a href="#" class="block px-8 sm:px-4 py-4 hover:bg-slate-100 dark:hover:bg-slate-600 dark:hover:text-white">{"Technology"}</a>
-                        </li>
-                        <li>
-                            <a href="#" class="block px-8 sm:px-4 py-4 hover:bg-slate-100 dark:hover:bg-slate-600 dark:hover:text-white">{"News"}</a>
-                        </li>
-                        <li>
-                            <a href="#" class="block px-8 sm:px-4 py-4 hover:bg-slate-100 dark:hover:bg-slate-600 dark:hover:text-white">{"Sports"}</a>
-                        </li>
+                        {menu}
                     </ul>
                 </div>
             </Header>
@@ -79,6 +81,7 @@ pub fn home() -> Html {
             <PageContent>
                 <ArticleList/>
             </PageContent>
+
             <Footer>
             if *fetching {
                 {"Loading..."}
