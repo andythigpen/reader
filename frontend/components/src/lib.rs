@@ -6,6 +6,8 @@ pub mod category_form;
 pub mod category_list;
 pub mod footer;
 pub mod header;
+pub mod header_dropdown;
+pub mod header_dropdown_item;
 pub mod icons;
 pub mod input_checkbox;
 pub mod input_color;

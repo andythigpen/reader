@@ -6,5 +6,6 @@ pub mod chevron_down;
 pub mod pencil_square;
 pub mod plus;
 pub mod rss;
+pub mod tag;
 pub mod trash;
 pub mod x_mark;

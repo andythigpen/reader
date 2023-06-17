@@ -6,6 +6,11 @@ use yew::prelude::*;
 use yew_router::prelude::*;
 use yewdux::prelude::*;
 
+use crate::header_dropdown::HeaderDropdown;
+use crate::header_dropdown_item::HeaderDropdownItem;
+use crate::icons::arrow_path::IconArrowPath;
+use crate::icons::tag::IconTag;
+use crate::icons::x_mark::IconXMark;
 use crate::icons::{bars_3::IconBars3, rss::IconRss};
 
 #[derive(Properties, PartialEq)]
@@ -16,16 +21,25 @@ pub struct Props {
 
 #[function_component(Header)]
 pub fn header(Props { children }: &Props) -> Html {
-    let dispatch = Dispatch::<ArticleStore>::new();
-    let onclick = dispatch.reduce_mut_future_callback(|state| {
-        Box::pin(async move {
-            let resp = Request::post("/api/rss_feeds/fetch").send().await.unwrap();
-            if resp.status() == 200 {
-                state.reload().await;
-                window().unwrap().scroll_with_x_and_y(0.0, 0.0);
-            }
+    let display_menu = use_state(|| false);
+
+    let onclick_refresh = {
+        Dispatch::<ArticleStore>::new().reduce_mut_future_callback(|state| {
+            Box::pin(async move {
+                let resp = Request::post("/api/rss_feeds/fetch").send().await.unwrap();
+                if resp.status() == 200 {
+                    state.reload().await;
+                    window().unwrap().scroll_with_x_and_y(0.0, 0.0);
+                }
+            })
         })
-    });
+    };
+
+    let onclick_menu = {
+        let display_menu = display_menu.clone();
+        Callback::from(move |_| display_menu.set(!*display_menu))
+    };
+
     let classes = classes!(
         "flex",
         "flex-row",
@@ -34,6 +48,8 @@ pub fn header(Props { children }: &Props) -> Html {
         "w-full",
         "max-w-5xl",
         "p-1",
+        // "py-2",
+        "leading-10",
         "items-center",
         "sticky",
         "top-0",
@@ -62,8 +78,40 @@ pub fn header(Props { children }: &Props) -> Html {
             <div class={classes!("flex", "flex-col", "flex-1", "relative", "items-center")}>
                 {for children.iter()}
             </div>
-            <div {onclick}>
-                <IconBars3 class={classes!("mx-2", "cursor-pointer")}/>
+            <div class={classes!("relative")}>
+                <div onclick={onclick_menu}>
+                    if !*display_menu {
+                        <IconBars3 class={classes!("mx-2", "cursor-pointer")}/>
+                    } else {
+                        <IconXMark class={classes!("mx-2", "cursor-pointer")}/>
+                    }
+                </div>
+                <HeaderDropdown display={*display_menu} class={classes!("right-0", "sm:-right-1")}>
+                    <HeaderDropdownItem>
+                        <div onclick={onclick_refresh} class={classes!(
+                            "block", "px-8", "sm:px-4", "py-4", "flex", "flex-row", "gap-2", "cursor-pointer"
+                        )}>
+                            <IconArrowPath />
+                            {"Refresh Feeds"}
+                        </div>
+                    </HeaderDropdownItem>
+                    <HeaderDropdownItem>
+                        <Link<Route> to={Route::Categories} classes={classes!(
+                            "block", "px-8", "sm:px-4", "py-4", "flex", "flex-row", "gap-2"
+                        )}>
+                            <IconTag />
+                            {"Categories"}
+                        </Link<Route>>
+                    </HeaderDropdownItem>
+                    <HeaderDropdownItem>
+                        <Link<Route> to={Route::RssFeeds} classes={classes!(
+                            "block", "px-8", "sm:px-4", "py-4", "flex", "flex-row", "gap-2"
+                        )}>
+                            <IconRss />
+                            {"RSS Feeds"}
+                        </Link<Route>>
+                    </HeaderDropdownItem>
+                </HeaderDropdown>
             </div>
         </div>
     }

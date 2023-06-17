@@ -6,14 +6,16 @@ use yew::prelude::*;
 use yewdux::prelude::*;
 
 use components::{
-    article_list::ArticleList, footer::Footer, header::Header,
-    icons::chevron_down::IconChevronDown, page_container::PageContainer, page_content::PageContent,
+    article_list::ArticleList, footer::Footer, header::Header, header_dropdown::HeaderDropdown,
+    header_dropdown_item::HeaderDropdownItem, icons::chevron_down::IconChevronDown,
+    page_container::PageContainer, page_content::PageContent,
 };
 use stores::article::ArticleStore;
 
 #[function_component(Home)]
 pub fn home() -> Html {
     let fetching = use_selector(|s: &ArticleStore| s.fetching);
+    let display_categories = use_state(|| false);
 
     // reload the article store when the browser reloads the page
     use_effect_with_deps(
@@ -55,27 +57,32 @@ pub fn home() -> Html {
     );
 
     let categories = use_selector(|s: &CategoryStore| s.categories.clone());
-    let menu = categories.iter().map(|c| html!{ 
-        <li>
-            <a href="#" class="block px-8 sm:px-4 py-4 hover:bg-slate-100 dark:hover:bg-slate-600 dark:hover:text-white">{c.name.clone()}</a>
-        </li>
-    }).collect::<Html>();
+    let menu = categories
+        .iter()
+        .map(|c| {
+            html! {
+                <HeaderDropdownItem>
+                    <a href="#" class={classes!("block", "px-8", "sm:px-4", "py-4")}>{c.name.clone()}</a>
+                </HeaderDropdownItem>
+            }
+        })
+        .collect::<Html>();
+
+    let onclick_category = {
+        let display_categories = display_categories.clone();
+        Callback::from(move |_| display_categories.set(!*display_categories))
+    };
 
     html! {
         <PageContainer>
             <Header>
-                <div class={classes!("flex", "flex-row", "flex-1", "gap-1")}>
+                <div onclick={onclick_category} class={classes!(
+                    "flex", "flex-row", "flex-1", "gap-1", "cursor-pointer", "items-center"
+                )}>
                     {"All"}
                     <IconChevronDown/>
                 </div>
-                <div class={classes!("hidden", "fixed", "sm:absolute", "left-0", "sm:left-auto", "top-6", "z-10", "bg-white", "divide-y", "divide-gray-100", "rounded-b-lg", "shadow-2xl", "w-full", "sm:w-64", "dark:bg-slate-950")}>
-                    <ul class={classes!("py-2", "text-gray-700", "dark:text-gray-200")}>
-                        <li>
-                            <a href="#" class="block px-8 sm:px-4 py-4 hover:bg-slate-100 dark:hover:bg-slate-600 dark:hover:text-white">{"All"}</a>
-                        </li>
-                        {menu}
-                    </ul>
-                </div>
+                <HeaderDropdown display={*display_categories} class={classes!("left-0", "sm:left-auto")}>{menu}</HeaderDropdown>
             </Header>
 
             <PageContent>
