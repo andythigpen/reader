@@ -79,7 +79,7 @@ pub fn header(Props { children }: &Props) -> Html {
                 {for children.iter()}
             </div>
             <div class={classes!("relative")}>
-                <div onclick={onclick_menu}>
+                <div onclick={onclick_menu} class={classes!("flex", "flex-col", "h-10", "justify-center")}>
                     if !*display_menu {
                         <IconBars3 class={classes!("mx-2", "cursor-pointer")}/>
                     } else {

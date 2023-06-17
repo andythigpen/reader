@@ -6,7 +6,7 @@ use axum::{
 };
 use std::sync::Arc;
 
-use entity::{article, rss_feed};
+use entity::{article, category, rss_feed};
 
 use crate::{error::RestError, pagination::Pagination, AppState};
 
@@ -68,11 +68,42 @@ async fn fetch_all(State(state): State<Arc<AppState>>) -> Result<(), RestError> 
         .map_err(|err| RestError::Internal(err))
 }
 
+async fn list_categories(
+    Path(id): Path<String>,
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<Vec<category::Model>>, RestError> {
+    let resp = service::category::list_by_rss_feed(&state.conn, &id).await?;
+    Ok(resp.into())
+}
+
+async fn add_category(
+    Path(id): Path<String>,
+    Path(category_id): Path<String>,
+    State(state): State<Arc<AppState>>,
+) -> Result<(), RestError> {
+    service::rss_feed::add_to_category(&state.conn, &id, &category_id).await?;
+    Ok(())
+}
+
+async fn remove_category(
+    Path(id): Path<String>,
+    Path(category_id): Path<String>,
+    State(state): State<Arc<AppState>>,
+) -> Result<(), RestError> {
+    service::rss_feed::remove_from_category(&state.conn, &id, &category_id).await?;
+    Ok(())
+}
+
 pub fn router(state: Arc<AppState>) -> Router {
     Router::new()
         .route("/", get(list).post(create))
         .route("/fetch", post(fetch_all))
         .route("/:id", get(retrieve).put(update).delete(delete))
         .route("/:id/fetch", post(fetch_articles))
+        .route("/:id/categories", get(list_categories))
+        .route(
+            "/:id/categories/:category_id",
+            post(add_category).delete(remove_category),
+        )
         .with_state(state)
 }

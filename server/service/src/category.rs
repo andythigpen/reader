@@ -1,8 +1,12 @@
 use anyhow::{anyhow, Result};
 use entity::{category, category::Entity as Category};
 use nanoid::nanoid;
-use sea_orm::{ActiveModelTrait, DbConn, DbErr, EntityTrait, PaginatorTrait, QueryOrder, Set};
+use sea_orm::{
+    ActiveModelTrait, DbConn, DbErr, EntityTrait, ModelTrait, PaginatorTrait, QueryOrder, Set,
+};
 use serde::{Deserialize, Serialize};
+
+use crate::rss_feed as rss_feed_service;
 
 #[derive(Serialize, Deserialize)]
 pub struct CreateModel {
@@ -60,4 +64,15 @@ pub async fn delete_by_id(db: &DbConn, id: &str) -> Result<()> {
         .map(Into::into)?;
     category.delete(db).await?;
     Ok(())
+}
+
+pub async fn list_by_rss_feed(db: &DbConn, rss_feed_id: &str) -> Result<Vec<category::Model>> {
+    let rss_feed = rss_feed_service::find_by_id(db, rss_feed_id)
+        .await?
+        .ok_or(anyhow!("Cannot find RSS feed."))?;
+    rss_feed
+        .find_related(Category)
+        .all(db)
+        .await
+        .map_err(|e| anyhow!(e))
 }

@@ -1,13 +1,16 @@
 use gloo_net::http::Request;
+use router::Route;
 use stores::rss_feed::RssFeedStore;
 use time::{format_description, format_description::well_known::Iso8601, OffsetDateTime};
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew::Properties;
+use yew_router::prelude::*;
 use yewdux::prelude::*;
 
 use crate::button::Button;
 use crate::icons::pencil_square::IconPencilSquare;
+use crate::icons::tag::IconTag;
 use crate::icons::trash::IconTrash;
 use crate::list_item::ListItem;
 use crate::list_item_thumb::ListItemThumb;
@@ -112,6 +115,9 @@ pub fn rss_feed(&Props { id }: &Props) -> Html {
                 <p>{model.description.clone()}</p>
             </div>
             <div class={classes!("flex", "flex-row", "items-center", "gap-4")}>
+                <Link<Route> to={Route::RssFeedCategories{ id: model.id.clone() }}>
+                    <IconTag class={classes!("cursor-pointer")} />
+                </Link<Route>>
                 <a onclick={edit}>
                     <IconPencilSquare class={classes!("cursor-pointer")} />
                 </a>

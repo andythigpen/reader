@@ -82,7 +82,9 @@ pub fn home() -> Html {
                     {"All"}
                     <IconChevronDown/>
                 </div>
-                <HeaderDropdown display={*display_categories} class={classes!("left-0", "sm:left-auto")}>{menu}</HeaderDropdown>
+                <HeaderDropdown display={*display_categories} class={classes!(
+                    "left-0", "sm:left-auto"
+                )}>{menu}</HeaderDropdown>
             </Header>
 
             <PageContent>

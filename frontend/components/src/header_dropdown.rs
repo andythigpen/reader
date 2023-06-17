@@ -22,6 +22,7 @@ pub fn header_dropdown(
 ) -> Html {
     let mut classes = classes!(
         "fixed",
+        "sm:absolute",
         "top-10",
         "z-10",
         "bg-white",

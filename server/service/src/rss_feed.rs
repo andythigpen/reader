@@ -1,12 +1,15 @@
 use anyhow::{anyhow, Result};
-use entity::{article, article::Entity as Article, rss_feed, rss_feed::Entity as RSSFeed};
+use entity::{
+    article, article::Entity as Article, rss_feed, rss_feed::Entity as RSSFeed, rss_feed_category,
+    rss_feed_category::Entity as RSSFeedCategory,
+};
 use futures::future;
 use nanoid::nanoid;
 use reqwest::Url;
 use rss::{Channel, Item};
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DbConn, DbErr, EntityTrait, PaginatorTrait, QueryFilter,
-    QueryOrder, QuerySelect, Set,
+    sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DbConn, DbErr, EntityTrait,
+    PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, Set, TransactionTrait,
 };
 use serde::{Deserialize, Serialize};
 use time::{
@@ -88,12 +91,26 @@ pub async fn update_by_id(db: &DbConn, id: &str, data: UpdateModel) -> Result<rs
 }
 
 pub async fn delete_by_id(db: &DbConn, id: &str) -> Result<()> {
+    let txn = db.begin().await?;
+
+    // remove from all categories
+    RSSFeedCategory::delete_many()
+        .filter(rss_feed_category::Column::RssFeedId.eq(id))
+        .exec(db)
+        .await?;
+
+    // remove all articles
     article_service::delete_by_rss_feed_id(db, id).await?;
+
+    // remove the feed
     let rss_feed: rss_feed::ActiveModel = find_by_id(db, id)
         .await?
         .ok_or(DbErr::Custom("Cannot find RSS feed.".to_owned()))
         .map(Into::into)?;
     rss_feed.delete(db).await?;
+
+    txn.commit().await?;
+
     Ok(())
 }
 
@@ -172,5 +189,33 @@ pub async fn fetch_all_articles(db: &DbConn) -> Result<()> {
 
     future::try_join_all(rss_feeds.iter().map(|(id,)| fetch_articles(db, id))).await?;
 
+    Ok(())
+}
+
+pub async fn add_to_category(db: &DbConn, id: &str, category_id: &str) -> Result<()> {
+    RSSFeedCategory::insert(rss_feed_category::ActiveModel {
+        rss_feed_id: Set(id.to_string()),
+        category_id: Set(category_id.to_string()),
+    })
+    .on_conflict(
+        OnConflict::columns([
+            rss_feed_category::Column::RssFeedId,
+            rss_feed_category::Column::CategoryId,
+        ])
+        .do_nothing()
+        .to_owned(),
+    )
+    .exec(db)
+    .await
+    .map_err(|e| anyhow!(e))?;
+    Ok(())
+}
+
+pub async fn remove_from_category(db: &DbConn, id: &str, category_id: &str) -> Result<()> {
+    RSSFeedCategory::delete_many()
+        .filter(rss_feed_category::Column::RssFeedId.eq(id))
+        .filter(rss_feed_category::Column::CategoryId.eq(category_id))
+        .exec(db)
+        .await?;
     Ok(())
 }
