@@ -5,10 +5,10 @@ use web_sys::{window, NavigationType, PerformanceNavigationTiming};
 use yew::prelude::*;
 use yewdux::prelude::*;
 
-use components::article_list::ArticleList;
-use components::footer::Footer;
-use components::page_container::PageContainer;
-use components::page_content::PageContent;
+use components::{
+    article_list::ArticleList, footer::Footer, header::Header,
+    icons::chevron_down::IconChevronDown, page_container::PageContainer, page_content::PageContent,
+};
 use stores::article::ArticleStore;
 
 #[function_component(Home)]
@@ -53,6 +53,29 @@ pub fn home() -> Html {
 
     html! {
         <PageContainer>
+            <Header>
+                <div class={classes!("flex", "flex-row", "flex-1", "gap-1")}>
+                    {"All"}
+                    <IconChevronDown/>
+                </div>
+                <div class="hidden fixed sm:absolute left-0 sm:left-auto top-6 z-10 bg-white divide-y divide-gray-100 rounded-b-lg shadow-2xl w-full sm:w-64 dark:bg-slate-950">
+                    <ul class="py-2 text-gray-700 dark:text-gray-200">
+                        <li>
+                            <a href="#" class="block px-8 sm:px-4 py-4 hover:bg-slate-100 dark:hover:bg-slate-600 dark:hover:text-white">{"All"}</a>
+                        </li>
+                        <li>
+                            <a href="#" class="block px-8 sm:px-4 py-4 hover:bg-slate-100 dark:hover:bg-slate-600 dark:hover:text-white">{"Technology"}</a>
+                        </li>
+                        <li>
+                            <a href="#" class="block px-8 sm:px-4 py-4 hover:bg-slate-100 dark:hover:bg-slate-600 dark:hover:text-white">{"News"}</a>
+                        </li>
+                        <li>
+                            <a href="#" class="block px-8 sm:px-4 py-4 hover:bg-slate-100 dark:hover:bg-slate-600 dark:hover:text-white">{"Sports"}</a>
+                        </li>
+                    </ul>
+                </div>
+            </Header>
+
             <PageContent>
                 <ArticleList/>
             </PageContent>

@@ -1,7 +1,7 @@
 use yew::prelude::*;
 
 use components::{
-    footer::Footer, page_container::PageContainer, page_content::PageContent,
+    footer::Footer, header::Header, page_container::PageContainer, page_content::PageContent,
     rss_feed_list::RssFeedList,
 };
 
@@ -9,6 +9,7 @@ use components::{
 pub fn rss_feeds() -> Html {
     html! {
         <PageContainer>
+            <Header/>
             <PageContent>
                 <RssFeedList />
             </PageContent>

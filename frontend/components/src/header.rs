@@ -4,10 +4,16 @@ use web_sys::window;
 use yew::prelude::*;
 use yewdux::prelude::*;
 
-use crate::icons::{arrow_path::IconArrowPath, rss::IconRss};
+use crate::icons::{arrow_path::IconArrowPath, chevron_down::IconChevronDown, rss::IconRss};
+
+#[derive(Properties, PartialEq)]
+pub struct Props {
+    #[prop_or_default]
+    pub children: Children,
+}
 
 #[function_component(Header)]
-pub fn header() -> Html {
+pub fn header(Props { children }: &Props) -> Html {
     let dispatch = Dispatch::<ArticleStore>::new();
     let onclick = dispatch.reduce_mut_future_callback(|state| {
         Box::pin(async move {
@@ -45,11 +51,14 @@ pub fn header() -> Html {
     );
     html! {
         <div class={classes}>
-            <div class={classes!("flex-1")}>
+            <div class={classes!("flex-0")}>
                 <a href="/">
                     <IconRss class={classes!("inline", "mx-2")}/>
                     {"Reader"}
                 </a>
+            </div>
+            <div class={classes!("flex", "flex-col", "flex-1", "relative", "items-center")}>
+                {for children.iter()}
             </div>
             <div {onclick}>
                 <IconArrowPath class={classes!("mx-2", "cursor-pointer")}/>

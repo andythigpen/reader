@@ -1,7 +1,5 @@
 use yew::prelude::*;
 
-use crate::header::Header;
-
 #[derive(Properties, PartialEq)]
 pub struct Props {
     #[prop_or_default]
@@ -20,7 +18,6 @@ pub fn page_container(Props { children }: &Props) -> Html {
     );
     html! {
         <div class={classes}>
-            <Header/>
             { for children.iter() }
         </div>
     }
