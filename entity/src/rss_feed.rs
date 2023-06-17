@@ -30,4 +30,13 @@ impl Related<super::article::Entity> for Entity {
     }
 }
 
+impl Related<super::category::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::rss_feed_category::Relation::Category.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::rss_feed_category::Relation::RssFeed.def().rev())
+    }
+}
+
 impl ActiveModelBehavior for ActiveModel {}

@@ -33,6 +33,7 @@ impl MigrationTrait for Migration {
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_article_rss_feed")
+                            .on_delete(ForeignKeyAction::Cascade)
                             .from(Article::Table, Article::RssFeedId)
                             .to(RSSFeed::Table, RSSFeed::Id),
                     )
