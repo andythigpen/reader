@@ -33,6 +33,18 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default(true),
                     )
+                    .col(
+                        ColumnDef::new(RSSFeed::Abbreviation)
+                            .string()
+                            .not_null()
+                            .default("?"),
+                    )
+                    .col(
+                        ColumnDef::new(RSSFeed::Color)
+                            .string()
+                            .not_null()
+                            .default("#6590D5"),
+                    )
                     .to_owned(),
             )
             .await
@@ -55,4 +67,6 @@ enum RSSFeed {
     CreatedAt,
     UpdatedAt,
     DisplayDescription,
+    Abbreviation,
+    Color,
 }

@@ -8,7 +8,7 @@ pub async fn find_by_id(db: &DbConn, id: &str) -> Result<Option<Model>, DbErr> {
 
 pub async fn list_by_page(db: &DbConn, page: u64, per_page: u64) -> Result<Vec<Model>, DbErr> {
     Article::find()
-        .order_by_desc(Column::CreatedAt)
+        .order_by_desc(Column::PubDate)
         .paginate(db, per_page)
         .fetch_page(page)
         .await

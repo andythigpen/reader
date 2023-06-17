@@ -21,13 +21,17 @@ impl Default for RssFeedStore {
             rss_feeds: vec![],
             fetching: false,
             at_end: false,
-            per_page: 100,
+            per_page: 1000,
             page: 0,
         }
     }
 }
 
 impl RssFeedStore {
+    pub fn get_by_id(&self, id: &str) -> Option<RssFeed> {
+        self.rss_feeds.iter().find(|r| r.id == id).cloned()
+    }
+
     pub async fn reload(&mut self) {
         self.rss_feeds.clear();
         self.fetching = false;

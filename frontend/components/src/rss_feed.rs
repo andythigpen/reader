@@ -10,6 +10,7 @@ use crate::button::Button;
 use crate::icons::pencil_square::IconPencilSquare;
 use crate::icons::trash::IconTrash;
 use crate::list_item::ListItem;
+use crate::list_item_thumb::ListItemThumb;
 use crate::modal::Modal;
 use crate::rss_feed_form::ModalAction;
 use crate::rss_feed_form::RssFeedForm;
@@ -104,6 +105,7 @@ pub fn rss_feed(&Props { id }: &Props) -> Html {
                     <Button onclick={delete_confirm} primary=true>{"Delete"}</Button>
                 </div>
             </Modal>
+            <ListItemThumb text={model.abbreviation.to_uppercase()} color={model.color.clone()} />
             <div class={classes!("flex", "flex-col", "flex-1")}>
                 <h2 class={classes!("dark:text-white", "text-lg")}>{model.name.clone()}</h2>
                 <span class={classes!("text-sm")}>{"Created on "}{created_at}</span>

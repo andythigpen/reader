@@ -23,6 +23,8 @@ pub struct CreateModel {
     pub description: String,
     pub url: String,
     pub display_description: bool,
+    pub color: String,
+    pub abbreviation: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -31,6 +33,8 @@ pub struct UpdateModel {
     pub description: String,
     pub url: String,
     pub display_description: bool,
+    pub color: String,
+    pub abbreviation: String,
 }
 
 pub async fn create(db: &DbConn, data: CreateModel) -> Result<rss_feed::Model> {
@@ -43,6 +47,8 @@ pub async fn create(db: &DbConn, data: CreateModel) -> Result<rss_feed::Model> {
         created_at: Set(now.to_owned()),
         updated_at: Set(now.to_owned()),
         display_description: Set(data.display_description),
+        color: Set(data.color.to_owned()),
+        abbreviation: Set(data.abbreviation.to_owned()),
     }
     .insert(db)
     .await
@@ -76,6 +82,8 @@ pub async fn update_by_id(db: &DbConn, id: &str, data: UpdateModel) -> Result<rs
     let now = OffsetDateTime::now_utc().format(&Iso8601::DEFAULT)?;
     rss_feed.updated_at = Set(now.to_owned());
     rss_feed.display_description = Set(data.display_description);
+    rss_feed.color = Set(data.color);
+    rss_feed.abbreviation = Set(data.abbreviation);
     rss_feed.update(db).await.map_err(|e| anyhow!(e))
 }
 

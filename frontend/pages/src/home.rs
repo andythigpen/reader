@@ -1,3 +1,4 @@
+use stores::rss_feed::RssFeedStore;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
 use web_sys::{window, NavigationType, PerformanceNavigationTiming};
@@ -35,6 +36,17 @@ pub fn home() -> Html {
                 }
                 || ()
             }
+        },
+        (),
+    );
+
+    use_effect_with_deps(
+        |_| {
+            spawn_local(async move {
+                Dispatch::<RssFeedStore>::new()
+                    .reduce_mut_future(|s| Box::pin(async move { s.fetch().await }))
+                    .await;
+            })
         },
         (),
     );

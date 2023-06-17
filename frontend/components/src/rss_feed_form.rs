@@ -4,6 +4,7 @@ use yew::prelude::*;
 
 use crate::button::Button;
 use crate::input_checkbox::InputCheckbox;
+use crate::input_color::InputColor;
 use crate::input_text::InputText;
 
 pub enum ModalAction {
@@ -33,6 +34,8 @@ pub fn rss_feed_form(props: &Props) -> Html {
                 created_at: "".to_string(),
                 updated_at: "".to_string(),
                 display_description: false,
+                abbreviation: "".to_string(),
+                color: "#6590D5".to_string(),
             })
             .clone()
     });
@@ -71,12 +74,32 @@ pub fn rss_feed_form(props: &Props) -> Html {
             });
         })
     };
+    let blur_abbreviation = {
+        let model = model.clone();
+        Callback::from(move |e: FocusEvent| {
+            let input: HtmlInputElement = e.target_unchecked_into();
+            model.set(Model {
+                abbreviation: input.value(),
+                ..(*model).clone()
+            });
+        })
+    };
     let blur_url = {
         let model = model.clone();
         Callback::from(move |e: FocusEvent| {
             let input: HtmlInputElement = e.target_unchecked_into();
             model.set(Model {
                 url: input.value(),
+                ..(*model).clone()
+            });
+        })
+    };
+    let change_color = {
+        let model = model.clone();
+        Callback::from(move |e: Event| {
+            let input: HtmlInputElement = e.target_unchecked_into();
+            model.set(Model {
+                color: input.value(),
                 ..(*model).clone()
             });
         })
@@ -99,7 +122,9 @@ pub fn rss_feed_form(props: &Props) -> Html {
             <InputText name="name" label="Name" value={model.name.clone()} onblur={blur_name} />
             <InputText name="description" label="Description" value={model.description.clone()}
                 onblur={blur_description} />
+            <InputText name="abbreviation" label="Abbreviation" value={model.abbreviation.clone()} onblur={blur_abbreviation} />
             <InputText name="url" label="URL" value={model.url.clone()} onblur={blur_url} />
+            <InputColor name="color" label="Color" value={model.color.clone()} onchange={change_color} />
 
             <InputCheckbox name="display_description" label="Display article descriptions"
                 checked={model.display_description} onchange={change_display_description} />
