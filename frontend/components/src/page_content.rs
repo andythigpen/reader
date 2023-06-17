@@ -16,7 +16,8 @@ pub fn page_content(Props { children }: &Props) -> Html {
         "lg:max-w-5xl",
         "rounded-b-lg",
         "dark:bg-slate-900",
-        "px-4",
+        "px-2",
+        "md:px-4",
         "py-2",
     );
     html! {

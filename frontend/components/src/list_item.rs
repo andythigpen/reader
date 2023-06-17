@@ -14,7 +14,7 @@ pub fn list_item(Props { children }: &Props) -> Html {
         "my-2",
         "dark:text-slate-400",
         "dark:bg-slate-800",
-        "items-center",
+        // "items-center",
         "justify-between",
         "w-full",
         "rounded-2xl",

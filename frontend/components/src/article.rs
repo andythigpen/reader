@@ -21,6 +21,9 @@ pub fn article(&Props { id }: &Props) -> Html {
 
     let rss_feed_store = use_store_value::<RssFeedStore>();
     let rss_feed = rss_feed_store.get_by_id(&article.rss_feed_id);
+    let rss_feed_name = rss_feed
+        .as_ref()
+        .map_or("unknown".to_string(), |r| r.name.clone());
     let abbreviation = rss_feed
         .as_ref()
         .map_or("".to_string(), |r| r.abbreviation.to_uppercase());
@@ -36,23 +39,23 @@ pub fn article(&Props { id }: &Props) -> Html {
         <ListItem>
             <ListItemThumb text={abbreviation} color={thumb_color} />
             <div class={classes!("flex", "flex-col", "md:flex-row", "flex-1", "md:items-center", "justify-between")}>
-            <a href={article.url.clone()} class={classes!("flex-1")} target={"_blank"} rel={"noopener noreferrer"}>
-                <h2 class={classes!("text-lg", "dark:text-white")}>
-                    {article.title.clone()}
-                </h2>
-                <span class={classes!("text-sm")}>{"Published at "}{pub_date}{" on Hacker News"}</span>
-                <p>{article.description.clone()}</p>
-            </a>
-            if let Some(comments_url) = &article.comments_url {
-                <div class={classes!("flex", "flex-row", "flex-0", "mr-4", "mt-2")} >
-                    <a href={comments_url.clone()} target={"_blank"} rel={"noopener noreferrer"} class={classes!(
-                        "flex", "flex-row", "gap-1"
-                    )}>
-                        <IconChatBubbleLeftEllipsis/>
-                        <span class={"md:hidden"}>{"Comments"}</span>
-                    </a>
-                </div>
-            }
+                <a href={article.url.clone()} class={classes!("flex-1")} target={"_blank"} rel={"noopener noreferrer"}>
+                    <h2 class={classes!("text-lg", "dark:text-white")}>
+                        {article.title.clone()}
+                    </h2>
+                    <span class={classes!("text-sm")}>{"Published on "}{rss_feed_name}{" at "}{pub_date}</span>
+                    <p>{article.description.clone()}</p>
+                </a>
+                if let Some(comments_url) = &article.comments_url {
+                    <div class={classes!("flex", "flex-row", "flex-0", "mr-4", "mt-2")} >
+                        <a href={comments_url.clone()} target={"_blank"} rel={"noopener noreferrer"} class={classes!(
+                            "flex", "flex-row", "gap-1"
+                        )}>
+                            <IconChatBubbleLeftEllipsis/>
+                            <span class={"md:hidden"}>{"Comments"}</span>
+                        </a>
+                    </div>
+                }
             </div>
         </ListItem>
     }
