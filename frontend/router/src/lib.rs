@@ -10,4 +10,6 @@ pub enum Route {
     RssFeedCategories { id: String },
     #[at("/categories")]
     Categories,
+    #[at("/categories/:id/articles")]
+    CategoryArticles { id: String },
 }

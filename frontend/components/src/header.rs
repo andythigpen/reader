@@ -24,12 +24,15 @@ pub fn header(Props { children }: &Props) -> Html {
     let display_menu = use_state(|| false);
 
     let onclick_refresh = {
-        Dispatch::<ArticleStore>::new().reduce_mut_future_callback(|state| {
+        let display_menu = display_menu.clone();
+        Dispatch::<ArticleStore>::new().reduce_mut_future_callback(move |state| {
+            let display_menu = display_menu.clone();
             Box::pin(async move {
                 let resp = Request::post("/api/rss_feeds/fetch").send().await.unwrap();
                 if resp.status() == 200 {
                     state.reload().await;
                     window().unwrap().scroll_with_x_and_y(0.0, 0.0);
+                    display_menu.set(false);
                 }
             })
         })

@@ -1,3 +1,4 @@
+use router::Route;
 use stores::article::ArticleStore;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
@@ -5,16 +6,38 @@ use web_sys::{
     HtmlDivElement, IntersectionObserver, IntersectionObserverEntry, IntersectionObserverInit,
 };
 use yew::prelude::*;
+use yew_router::prelude::*;
 use yewdux::prelude::*;
 
 use crate::article::Article;
 use crate::list_item::ListItem;
 
+#[derive(Properties, PartialEq)]
+pub struct Props {
+    #[prop_or_default]
+    pub category_id: Option<String>,
+}
+
 #[function_component(ArticleList)]
-pub fn article_list() -> Html {
-    let store = use_store_value::<ArticleStore>();
+pub fn article_list(props: &Props) -> Html {
+    let (store, dispatch) = use_store::<ArticleStore>();
+    dispatch.reduce_mut(|s| s.category_id(props.category_id.clone()));
+
+    let route = use_route::<Route>();
 
     let node = use_node_ref();
+
+    use_effect_with_deps(
+        |_| {
+            spawn_local(async move {
+                Dispatch::<ArticleStore>::new()
+                    .reduce_mut_future(|s| Box::pin(async move { s.fetch().await }))
+                    .await;
+            });
+            || ()
+        },
+        route,
+    );
 
     use_effect_with_deps(
         {

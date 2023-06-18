@@ -1962,11 +1962,13 @@ name = "pages"
 version = "0.1.0"
 dependencies = [
  "components",
+ "router",
  "stores",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
  "yew",
+ "yew-router",
  "yewdux",
 ]
 

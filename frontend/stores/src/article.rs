@@ -7,6 +7,7 @@ use yewdux::prelude::*;
 #[store(storage = "session")]
 pub struct ArticleStore {
     pub articles: Vec<Article>,
+    category_id: Option<String>,
     // true when a fetch is currently in progress
     pub fetching: bool,
     // true when the last attempt to fetch articles returns less than the per_page amount...meaning
@@ -20,6 +21,7 @@ impl Default for ArticleStore {
     fn default() -> Self {
         Self {
             articles: vec![],
+            category_id: None,
             fetching: false,
             at_end: false,
             per_page: 20,
@@ -29,6 +31,16 @@ impl Default for ArticleStore {
 }
 
 impl ArticleStore {
+    pub fn category_id(&mut self, category_id: Option<String>) {
+        if self.category_id != category_id {
+            self.articles.clear();
+            self.fetching = false;
+            self.at_end = false;
+            self.page = 0;
+        }
+        self.category_id = category_id;
+    }
+
     pub async fn reload(&mut self) {
         self.articles.clear();
         self.fetching = false;
@@ -47,7 +59,13 @@ impl ArticleStore {
         let page = self.page;
         let per_page = self.per_page;
 
-        let resp = Request::get("/api/articles")
+        let endpoint = if let Some(category_id) = &self.category_id {
+            format!("/api/categories/{}/articles", category_id)
+        } else {
+            "/api/articles".to_string()
+        };
+
+        let resp = Request::get(&endpoint)
             .query([
                 ("page", page.to_string()),
                 ("per_page", per_page.to_string()),

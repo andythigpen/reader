@@ -13,6 +13,7 @@ fn switch(routes: Route) -> Html {
         Route::RssFeeds => html! { <RssFeeds /> },
         Route::RssFeedCategories { id } => html! { <RssFeedCategories {id} /> },
         Route::Categories => html! { <Categories /> },
+        Route::CategoryArticles { id } => html! { <Home category_id={id} /> },
     }
 }
 
