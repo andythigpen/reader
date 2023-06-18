@@ -6,7 +6,7 @@ use axum::{
 };
 use std::sync::Arc;
 
-use entity::category;
+use entity::{article, category};
 
 use crate::{error::RestError, pagination::Pagination, AppState};
 
@@ -54,9 +54,25 @@ async fn delete(
     Ok(())
 }
 
+async fn list_articles(
+    Path(id): Path<String>,
+    State(state): State<Arc<AppState>>,
+    pagination: Query<Pagination>,
+) -> Result<Json<Vec<article::Model>>, RestError> {
+    let resp = service::article::list_by_page_and_category(
+        &state.conn,
+        &id,
+        pagination.page,
+        pagination.per_page,
+    )
+    .await?;
+    Ok(resp.into())
+}
+
 pub fn router(state: Arc<AppState>) -> Router {
     Router::new()
         .route("/", get(list).post(create))
         .route("/:id", get(retrieve).put(update).delete(delete))
+        .route("/:id/articles", get(list_articles))
         .with_state(state)
 }
