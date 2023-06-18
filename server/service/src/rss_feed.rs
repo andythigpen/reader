@@ -193,7 +193,7 @@ pub async fn fetch_all_articles(db: &DbConn) -> Result<()> {
 }
 
 pub async fn add_to_category(db: &DbConn, id: &str, category_id: &str) -> Result<()> {
-    RSSFeedCategory::insert(rss_feed_category::ActiveModel {
+    let result = RSSFeedCategory::insert(rss_feed_category::ActiveModel {
         rss_feed_id: Set(id.to_string()),
         category_id: Set(category_id.to_string()),
     })
@@ -206,9 +206,13 @@ pub async fn add_to_category(db: &DbConn, id: &str, category_id: &str) -> Result
         .to_owned(),
     )
     .exec(db)
-    .await
-    .map_err(|e| anyhow!(e))?;
-    Ok(())
+    .await;
+
+    match result {
+        Ok(_) => Ok(()),
+        Err(DbErr::RecordNotInserted) => Ok(()),
+        Err(e) => Err(anyhow!(e)),
+    }
 }
 
 pub async fn remove_from_category(db: &DbConn, id: &str, category_id: &str) -> Result<()> {

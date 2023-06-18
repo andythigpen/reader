@@ -1,10 +1,9 @@
-use stores::rss_feed::RssFeedStore;
 use yew::prelude::*;
 
 use components::{
     footer::Footer, header::Header, page_container::PageContainer, page_content::PageContent,
+    rss_feed_category_list::RssFeedCategoryList,
 };
-use yewdux::prelude::use_store_value;
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
@@ -13,17 +12,13 @@ pub struct Props {
 
 #[function_component(RssFeedCategories)]
 pub fn rss_feed_categories(Props { id }: &Props) -> Html {
-    let rss_feed_store = use_store_value::<RssFeedStore>();
-    let rss_feed = rss_feed_store.get_by_id(&id).unwrap(); // FIXME: this can be None on a refresh of the page
-
     html! {
         <PageContainer>
             <Header/>
 
             <PageContent>
-                <h2>{"Select Categories"}</h2>
-                <h3>{rss_feed.name.clone()}</h3>
-
+                <h2 class={classes!("flex-0", "text-xl")}>{"Select Categories"}</h2>
+                <RssFeedCategoryList id={id.clone()} />
             </PageContent>
 
             <Footer/>

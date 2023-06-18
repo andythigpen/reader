@@ -18,5 +18,7 @@ pub mod modal;
 pub mod page_container;
 pub mod page_content;
 pub mod rss_feed;
+pub mod rss_feed_category;
+pub mod rss_feed_category_list;
 pub mod rss_feed_form;
 pub mod rss_feed_list;

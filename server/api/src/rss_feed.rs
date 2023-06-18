@@ -77,8 +77,7 @@ async fn list_categories(
 }
 
 async fn add_category(
-    Path(id): Path<String>,
-    Path(category_id): Path<String>,
+    Path((id, category_id)): Path<(String, String)>,
     State(state): State<Arc<AppState>>,
 ) -> Result<(), RestError> {
     service::rss_feed::add_to_category(&state.conn, &id, &category_id).await?;
@@ -86,8 +85,7 @@ async fn add_category(
 }
 
 async fn remove_category(
-    Path(id): Path<String>,
-    Path(category_id): Path<String>,
+    Path((id, category_id)): Path<(String, String)>,
     State(state): State<Arc<AppState>>,
 ) -> Result<(), RestError> {
     service::rss_feed::remove_from_category(&state.conn, &id, &category_id).await?;

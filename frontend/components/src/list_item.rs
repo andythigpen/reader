@@ -7,10 +7,19 @@ pub struct Props {
 
     #[prop_or_default]
     pub class: Classes,
+
+    #[prop_or_default]
+    pub onclick: Callback<MouseEvent>,
 }
 
 #[function_component(ListItem)]
-pub fn list_item(Props { children, class }: &Props) -> Html {
+pub fn list_item(
+    Props {
+        children,
+        class,
+        onclick,
+    }: &Props,
+) -> Html {
     let classes = classes!(
         "flex",
         "flex-row",
@@ -24,7 +33,7 @@ pub fn list_item(Props { children, class }: &Props) -> Html {
         class.clone()
     );
     html! {
-        <div class={classes}>
+        <div class={classes} {onclick}>
             { for children.iter() }
         </div>
     }
