@@ -12,3 +12,7 @@ dev-server:
 
 entities:
 	@sea-orm-cli generate entity -u sqlite://reader.db --with-serde both -o entity/src/ -l
+
+# cargo install cross
+cross:
+	@cross build --release --target=arm-unknown-linux-gnueabihf --bin server

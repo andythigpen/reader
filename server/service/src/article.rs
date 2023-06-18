@@ -1,7 +1,7 @@
 use anyhow::Result;
 use entity::{
-    article::Column, article::Entity as Article, article::Model, category,
-    category::Entity as Category, rss_feed, rss_feed::Entity as RssFeed, rss_feed_category,
+    article::Column, article::Entity as Article, article::Model, rss_feed::Entity as RssFeed,
+    rss_feed_category,
 };
 use sea_orm::{
     sea_query::{Expr, IntoCondition},
