@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Result};
+use dto;
 use entity::{
     article, article::Entity as Article, rss_feed, rss_feed::Entity as RSSFeed, rss_feed_category,
     rss_feed_category::Entity as RSSFeedCategory,
@@ -11,7 +12,6 @@ use sea_orm::{
     sea_query::OnConflict, ActiveModelTrait, ColumnTrait, DbConn, DbErr, EntityTrait,
     PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, Set, TransactionTrait,
 };
-use serde::{Deserialize, Serialize};
 use time::{
     format_description::well_known::Iso8601, format_description::well_known::Rfc2822,
     OffsetDateTime,
@@ -20,27 +20,7 @@ use urlnorm::UrlNormalizer;
 
 use crate::article as article_service;
 
-#[derive(Serialize, Deserialize)]
-pub struct CreateModel {
-    pub name: String,
-    pub description: String,
-    pub url: String,
-    pub display_description: bool,
-    pub color: String,
-    pub abbreviation: String,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct UpdateModel {
-    pub name: String,
-    pub description: String,
-    pub url: String,
-    pub display_description: bool,
-    pub color: String,
-    pub abbreviation: String,
-}
-
-pub async fn create(db: &DbConn, data: CreateModel) -> Result<rss_feed::Model> {
+pub async fn create(db: &DbConn, data: dto::CreateRssFeed) -> Result<rss_feed::Model> {
     let now = OffsetDateTime::now_utc().format(&Iso8601::DEFAULT)?;
     rss_feed::ActiveModel {
         id: Set(nanoid!().to_owned()),
@@ -74,7 +54,11 @@ pub async fn list_by_page(
         .await
 }
 
-pub async fn update_by_id(db: &DbConn, id: &str, data: UpdateModel) -> Result<rss_feed::Model> {
+pub async fn update_by_id(
+    db: &DbConn,
+    id: &str,
+    data: dto::UpdateRssFeed,
+) -> Result<rss_feed::Model> {
     let mut rss_feed: rss_feed::ActiveModel = find_by_id(db, id)
         .await?
         .ok_or(DbErr::Custom("Cannot find RSS feed.".to_owned()))

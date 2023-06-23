@@ -10,14 +10,17 @@ path = "src/lib.rs"
 
 [dependencies]
 anyhow = "1.0.71"
+dto = { path = "../../dto" }
 entity = { path = "../../entity" }
 futures = "0.3.28"
 log = "0.4.18"
 nanoid = "0.4.0"
+readability = { version = "0.2.0", features = ["reqwest"] }
 reqwest = "0.11.18"
 rss = "2.0.4"
 sea-orm = { version = "^0" }
 serde = { version = "1.0.163", features = ["derive"] }
 serde_json = "1.0.96"
 time = "0.3.22"
+tokio = "1.28.2"
 urlnorm = "0.1.4"

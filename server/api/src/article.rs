@@ -28,9 +28,18 @@ async fn retrieve(
     Ok(model.into())
 }
 
+async fn retrieve_readability(
+    Path(id): Path<String>,
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<dto::ReadabilityArticle>, RestError> {
+    let model = service::article::get_readability_article(&state.conn, &id).await?;
+    Ok(model.into())
+}
+
 pub fn router(state: Arc<AppState>) -> Router {
     Router::new()
         .route("/", get(list))
         .route("/:id", get(retrieve))
+        .route("/:id/readability", get(retrieve_readability))
         .with_state(state)
 }

@@ -92,7 +92,7 @@ pub fn header(Props { children }: &Props) -> Html {
                 <HeaderDropdown display={*display_menu} class={classes!("right-0", "sm:-right-1")}>
                     <HeaderDropdownItem>
                         <div onclick={onclick_refresh} class={classes!(
-                            "block", "px-8", "sm:px-4", "py-4", "flex", "flex-row", "gap-2", "cursor-pointer"
+                            "block", "px-8", "sm:px-4", "py-4", "flex", "flex-row", "gap-2", "cursor-pointer", "items-center"
                         )}>
                             <IconArrowPath />
                             {"Refresh Feeds"}
@@ -100,7 +100,7 @@ pub fn header(Props { children }: &Props) -> Html {
                     </HeaderDropdownItem>
                     <HeaderDropdownItem>
                         <Link<Route> to={Route::Categories} classes={classes!(
-                            "block", "px-8", "sm:px-4", "py-4", "flex", "flex-row", "gap-2"
+                            "block", "px-8", "sm:px-4", "py-4", "flex", "flex-row", "gap-2", "items-center"
                         )}>
                             <IconTag />
                             {"Categories"}
@@ -108,7 +108,7 @@ pub fn header(Props { children }: &Props) -> Html {
                     </HeaderDropdownItem>
                     <HeaderDropdownItem>
                         <Link<Route> to={Route::RssFeeds} classes={classes!(
-                            "block", "px-8", "sm:px-4", "py-4", "flex", "flex-row", "gap-2"
+                            "block", "px-8", "sm:px-4", "py-4", "flex", "flex-row", "gap-2", "items-center"
                         )}>
                             <IconRss />
                             {"RSS Feeds"}

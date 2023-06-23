@@ -4,6 +4,7 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
+use dto;
 use std::sync::Arc;
 
 use entity::{article, category, rss_feed};
@@ -21,7 +22,7 @@ async fn list(
 
 async fn create(
     State(state): State<Arc<AppState>>,
-    Json(body): Json<service::rss_feed::CreateModel>,
+    Json(body): Json<dto::CreateRssFeed>,
 ) -> Result<Json<rss_feed::Model>, RestError> {
     let model = service::rss_feed::create(&state.conn, body).await?;
     Ok(model.into())
@@ -40,7 +41,7 @@ async fn retrieve(
 async fn update(
     Path(id): Path<String>,
     State(state): State<Arc<AppState>>,
-    Json(body): Json<service::rss_feed::UpdateModel>,
+    Json(body): Json<dto::UpdateRssFeed>,
 ) -> Result<Json<rss_feed::Model>, RestError> {
     let model = service::rss_feed::update_by_id(&state.conn, &id, body).await?;
     Ok(model.into())

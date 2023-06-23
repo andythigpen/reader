@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "dto",
     "entity",
     "frontend",
     "frontend/components",
@@ -11,3 +12,6 @@ members = [
     "server/migration",
     "server/service"
 ]
+
+[profile.release]
+lto = true

@@ -1,6 +1,7 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
 
+use pages::article::Article;
 use pages::categories::Categories;
 use pages::home::Home;
 use pages::rss_feed_categories::RssFeedCategories;
@@ -14,6 +15,7 @@ fn switch(routes: Route) -> Html {
         Route::RssFeedCategories { id } => html! { <RssFeedCategories {id} /> },
         Route::Categories => html! { <Categories /> },
         Route::CategoryArticles { id } => html! { <Home category_id={id} /> },
+        Route::ReadabilityArticle { id } => html! { <Article {id} /> },
     }
 }
 

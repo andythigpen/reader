@@ -1,0 +1,12 @@
+[package]
+name = "dto"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "dto"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { version = "1.0.163", features = ["derive"] }
