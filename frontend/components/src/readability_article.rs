@@ -42,7 +42,7 @@ pub fn readability_article(props: &Props) -> HtmlResult {
             let div: Element = document().create_element("article").unwrap();
             div.set_attribute(
                 "class",
-                "[&>p]:my-6 [&_a]:text-sky-400 text-xl leading-8 max-w-2xl",
+                "[&>p]:my-6 [&_a]:text-sky-400 [&_code]:overflow-auto [&_code]:block text-xl leading-8 md:max-w-2xl max-w-full",
             )
             .unwrap();
             div.set_inner_html(&article.content);
@@ -53,8 +53,8 @@ pub fn readability_article(props: &Props) -> HtmlResult {
     );
 
     Ok(html! {
-        <div class={classes!("flex", "flex-col", "items-center", "m-2", "lg:my-4")}>
-            <h1 class={classes!("max-w-2xl", "text-3xl")}>{title}</h1>
+        <div class={classes!("flex", "flex-col", "items-center", "m-2", "md:my-4")}>
+            <h1 class={classes!("md:max-w-2xl", "text-3xl")}>{title}</h1>
             <aside class={classes!("text-sm", "my-2")}>
                 {"Published at "}<Date value={pub_date}/>
                 {" | "}
