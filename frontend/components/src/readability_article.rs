@@ -42,7 +42,7 @@ pub fn readability_article(props: &Props) -> HtmlResult {
             let div: Element = document().create_element("article").unwrap();
             div.set_attribute(
                 "class",
-                "[&>p]:my-6 [&_a]:text-sky-400 [&_code]:overflow-auto [&_code]:block text-xl leading-8 md:max-w-2xl max-w-full",
+                "[&>p]:my-6 [&_a]:text-sky-400 [&_code]:overflow-auto [&_code]:block [&_pre]:overflow-auto text-xl leading-8 md:max-w-2xl max-w-full",
             )
             .unwrap();
             div.set_inner_html(&article.content);
