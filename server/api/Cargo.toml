@@ -13,7 +13,7 @@ anyhow = "1.0.71"
 axum = "0.6.18"
 clap = { version = "4.3.1", features = ["derive"] }
 dto = { path = "../../dto" }
-entity = { path = "../../entity" }
+entity = { path = "../entity" }
 log = "0.4.18"
 migration = { path = "../migration" }
 sea-orm = { version = "^0", features = [ "sqlx-sqlite", "runtime-tokio-rustls", "macros" ] }

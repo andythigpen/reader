@@ -11,7 +11,7 @@ path = "src/lib.rs"
 [dependencies]
 anyhow = "1.0.71"
 dto = { path = "../../dto" }
-entity = { path = "../../entity" }
+entity = { path = "../entity" }
 futures = "0.3.28"
 log = "0.4.18"
 nanoid = "0.4.0"
