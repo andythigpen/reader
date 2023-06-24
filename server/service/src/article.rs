@@ -1,9 +1,12 @@
+use std::time::Duration;
+
 use anyhow::{anyhow, Result};
 use dto;
 use entity::{
     article::Column, article::Entity as Article, rss_feed::Entity as RssFeed, rss_feed_category,
 };
 use readability::extractor;
+use reqwest::Url;
 use sea_orm::{
     sea_query::{Expr, IntoCondition},
     ColumnTrait, DbConn, DbErr, EntityTrait, JoinType, PaginatorTrait, QueryFilter, QueryOrder,
@@ -11,6 +14,8 @@ use sea_orm::{
 };
 use time::{format_description::well_known::Iso8601, OffsetDateTime};
 use tokio::task;
+
+use crate::APP_USER_AGENT;
 
 pub async fn find_by_id(db: &DbConn, id: &str) -> Result<Option<dto::Article>, DbErr> {
     Ok(Article::find_by_id(id).one(db).await?.map(Into::into))
@@ -101,9 +106,21 @@ pub async fn get_readability_article(db: &DbConn, id: &str) -> Result<dto::Reada
         .await?
         .ok_or(anyhow!("Article not found"))?;
     let url = article.url.clone();
-    let scrape = task::spawn_blocking(move || extractor::scrape(&article.url))
-        .await?
-        .map_err(|e| anyhow!(e))?;
+    let scrape: readability::extractor::Product = task::spawn_blocking(move || {
+        let client = reqwest::blocking::Client::builder()
+            .user_agent(APP_USER_AGENT)
+            .timeout(Duration::new(30, 0))
+            .build()?;
+        let mut res = client.get(&article.url).send()?;
+        if res.status().is_success() {
+            let url = Url::parse(&article.url)?;
+            extractor::extract(&mut res, &url)
+        } else {
+            Err(readability::error::Error::Unexpected)
+        }
+    })
+    .await?
+    .map_err(|e| anyhow!(e))?;
     Ok(dto::ReadabilityArticle {
         pub_date: article.pub_date,
         rss_feed_id: article.rss_feed_id,

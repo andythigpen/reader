@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use anyhow::{anyhow, Result};
+use atom_syndication::{Entry, Feed};
 use dto;
 use entity::{
     article, article::Entity as Article, rss_feed, rss_feed::Entity as RSSFeed, rss_feed_category,
@@ -20,7 +21,7 @@ use time::{
 };
 use urlnorm::UrlNormalizer;
 
-use crate::article as article_service;
+use crate::{article as article_service, APP_USER_AGENT};
 
 pub async fn create(db: &DbConn, data: dto::CreateRssFeed) -> Result<dto::RssFeed> {
     let now = OffsetDateTime::now_utc().format(&Iso8601::DEFAULT)?;
@@ -107,7 +108,7 @@ pub async fn delete_by_id(db: &DbConn, id: &str) -> Result<()> {
 }
 
 // TODO: move to article service mod
-async fn save_article(
+async fn save_rss_article(
     db: &DbConn,
     rss_feed_id: &str,
     save_description: bool,
@@ -154,6 +155,92 @@ async fn save_article(
     .map_err(|e| anyhow!(e))
 }
 
+async fn save_atom_article(
+    db: &DbConn,
+    rss_feed_id: &str,
+    save_description: bool,
+    entry: &Entry,
+) -> Result<article::Model> {
+    let norm = UrlNormalizer::default();
+    let link = entry
+        .links()
+        .first()
+        .map_or("".to_string(), |l| l.href.clone());
+    let url = Url::parse(&link)?;
+    let normalized_url = norm.compute_normalization_string(&url);
+    let article = Article::find()
+        .filter(article::Column::NormalizedUrl.eq(normalized_url.to_owned()))
+        .one(db)
+        .await?;
+    if let Some(article) = article {
+        // already exists
+        return Ok(article);
+    }
+    let description = if save_description {
+        entry
+            .summary()
+            .map_or("".to_string(), |s| s.to_string())
+            .to_owned()
+    } else {
+        "".to_owned()
+    };
+    let created_at = OffsetDateTime::now_utc().format(&Iso8601::DEFAULT).unwrap();
+    let pub_date = match entry.published() {
+        Some(d) => OffsetDateTime::parse(&d.to_rfc2822(), &Rfc2822)
+            .unwrap()
+            .format(&Iso8601::DEFAULT)
+            .unwrap(),
+        None => created_at.to_owned(),
+    };
+    article::ActiveModel {
+        id: Set(nanoid!()),
+        title: Set(entry.title().to_string()),
+        url: Set(link),
+        normalized_url: Set(normalized_url),
+        comments_url: Set(None),
+        description: Set(description),
+        created_at: Set(created_at),
+        pub_date: Set(pub_date),
+        rss_feed_id: Set(rss_feed_id.to_owned()),
+    }
+    .insert(db)
+    .await
+    .map_err(|e| anyhow!(e))
+}
+
+async fn save_rss_items(
+    db: &DbConn,
+    rss_feed_id: &str,
+    display_description: bool,
+    channel: Channel,
+) -> Result<()> {
+    future::try_join_all(
+        channel
+            .items()
+            .iter()
+            .map(|it| async { save_rss_article(db, rss_feed_id, display_description, it).await }),
+    )
+    .await?;
+
+    Ok(())
+}
+
+async fn save_atom_entries(
+    db: &DbConn,
+    rss_feed_id: &str,
+    display_description: bool,
+    feed: Feed,
+) -> Result<()> {
+    future::try_join_all(
+        feed.entries()
+            .iter()
+            .map(|it| async { save_atom_article(db, rss_feed_id, display_description, it).await }),
+    )
+    .await?;
+
+    Ok(())
+}
+
 pub async fn fetch_articles(db: &DbConn, id: &str) -> Result<()> {
     let rss_feed: rss_feed::Model = RSSFeed::find_by_id(id)
         .one(db)
@@ -163,16 +250,20 @@ pub async fn fetch_articles(db: &DbConn, id: &str) -> Result<()> {
 
     log::info!("fetching articles for feed {id}");
 
-    let content = reqwest::get(&rss_feed.url).await?.bytes().await?;
-    let channel = Channel::read_from(&content[..])?;
+    let client = reqwest::Client::builder()
+        .user_agent(APP_USER_AGENT)
+        .build()?;
+    let content = client.get(&rss_feed.url).send().await?.bytes().await?;
 
-    future::try_join_all(
-        channel
-            .items()
-            .iter()
-            .map(|it| async { save_article(db, id, rss_feed.display_description, it).await }),
-    )
-    .await?;
+    log::info!("feed {id} returned:\n{content:#?}");
+
+    match Feed::read_from(&content[..]) {
+        Ok(feed) => save_atom_entries(db, id, rss_feed.display_description, feed).await,
+        _ => match Channel::read_from(&content[..]) {
+            Ok(channel) => save_rss_items(db, id, rss_feed.display_description, channel).await,
+            _ => Err(anyhow!("No Atom or RSS feed found for {id}")),
+        },
+    }?;
 
     let next_update = OffsetDateTime::now_utc()
         .saturating_add(time::Duration::minutes(

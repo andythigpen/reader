@@ -47,12 +47,6 @@ pub fn article(&Props { id }: &Props) -> Html {
                     <p>{article.description.clone()}</p>
                 </Link<Route>>
                 <div class={classes!("flex", "flex-row", "flex-0", "mr-4", "mt-2", "gap-4")} >
-                    <a href={article.url.clone()} target={"_blank"} rel={"noopener noreferrer"} class={classes!(
-                        "flex", "flex-row", "gap-1"
-                    )}>
-                        <IconArrowTopRight />
-                        <span class={"md:hidden"}>{"Article"}</span>
-                    </a>
                     if let Some(comments_url) = &article.comments_url {
                         <a href={comments_url.clone()} target={"_blank"} rel={"noopener noreferrer"} class={classes!(
                             "flex", "flex-row", "gap-1"
@@ -61,6 +55,12 @@ pub fn article(&Props { id }: &Props) -> Html {
                             <span class={"md:hidden"}>{"Comments"}</span>
                         </a>
                     }
+                    <a href={article.url.clone()} target={"_blank"} rel={"noopener noreferrer"} class={classes!(
+                        "flex", "flex-row", "gap-1"
+                    )}>
+                        <IconArrowTopRight />
+                        <span class={"md:hidden"}>{"Article"}</span>
+                    </a>
                 </div>
             </div>
         </ListItem>

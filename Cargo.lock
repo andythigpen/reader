@@ -3087,6 +3087,7 @@ name = "service"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "atom_syndication",
  "dto",
  "entity",
  "futures",
