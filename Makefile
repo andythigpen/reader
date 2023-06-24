@@ -1,8 +1,14 @@
-.PHONY: dev-frontend dev-server entities prod
+.PHONY: dev-frontend dev-server entities prod prod-frontend prod-server cross arm
 
-prod:
+arm: prod-frontend cross
+
+prod: prod-frontend prod-server
+
+prod-frontend:
 	@cd frontend && trunk build --release
-	@cargo build --release
+
+prod-server:
+	@cargo build --release --bin server
 
 dev-frontend:
 	@cd frontend && trunk serve --proxy-backend=http://[::1]:8081/api/
