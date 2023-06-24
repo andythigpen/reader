@@ -7,14 +7,14 @@ use axum::{
 use dto;
 use std::sync::Arc;
 
-use entity::{article, category, rss_feed};
+use entity::{article, category};
 
 use crate::{error::RestError, pagination::Pagination, AppState};
 
 async fn list(
     State(state): State<Arc<AppState>>,
     pagination: Query<Pagination>,
-) -> Result<Json<Vec<rss_feed::Model>>, RestError> {
+) -> Result<Json<Vec<dto::RssFeed>>, RestError> {
     let page =
         service::rss_feed::list_by_page(&state.conn, pagination.page, pagination.per_page).await?;
     Ok(page.into())
@@ -23,7 +23,7 @@ async fn list(
 async fn create(
     State(state): State<Arc<AppState>>,
     Json(body): Json<dto::CreateRssFeed>,
-) -> Result<Json<rss_feed::Model>, RestError> {
+) -> Result<Json<dto::RssFeed>, RestError> {
     let model = service::rss_feed::create(&state.conn, body).await?;
     Ok(model.into())
 }
@@ -31,7 +31,7 @@ async fn create(
 async fn retrieve(
     Path(id): Path<String>,
     State(state): State<Arc<AppState>>,
-) -> Result<Json<rss_feed::Model>, RestError> {
+) -> Result<Json<dto::RssFeed>, RestError> {
     let model = service::rss_feed::find_by_id(&state.conn, &id)
         .await?
         .ok_or(RestError::NotFound(format!("RSS feed '{}' not found", id)))?;
@@ -42,7 +42,7 @@ async fn update(
     Path(id): Path<String>,
     State(state): State<Arc<AppState>>,
     Json(body): Json<dto::UpdateRssFeed>,
-) -> Result<Json<rss_feed::Model>, RestError> {
+) -> Result<Json<dto::RssFeed>, RestError> {
     let model = service::rss_feed::update_by_id(&state.conn, &id, body).await?;
     Ok(model.into())
 }
@@ -93,6 +93,21 @@ async fn remove_category(
     Ok(())
 }
 
+async fn list_articles(
+    Path(id): Path<String>,
+    State(state): State<Arc<AppState>>,
+    pagination: Query<Pagination>,
+) -> Result<Json<Vec<dto::Article>>, RestError> {
+    let resp = service::article::list_by_page_and_rss_feed(
+        &state.conn,
+        &id,
+        pagination.page,
+        pagination.per_page,
+    )
+    .await?;
+    Ok(resp.into())
+}
+
 pub fn router(state: Arc<AppState>) -> Router {
     Router::new()
         .route("/", get(list).post(create))
@@ -104,5 +119,6 @@ pub fn router(state: Arc<AppState>) -> Router {
             "/:id/categories/:category_id",
             post(add_category).delete(remove_category),
         )
+        .route("/:id/articles", get(list_articles))
         .with_state(state)
 }

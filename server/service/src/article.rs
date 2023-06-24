@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Result};
+use dto;
 use entity::{
     article::Column, article::Entity as Article, article::Model, rss_feed::Entity as RssFeed,
     rss_feed_category,
@@ -21,6 +22,23 @@ pub async fn list_by_page(db: &DbConn, page: u64, per_page: u64) -> Result<Vec<M
         .paginate(db, per_page)
         .fetch_page(page)
         .await
+}
+
+pub async fn list_by_page_and_rss_feed(
+    db: &DbConn,
+    rss_feed_id: &str,
+    page: u64,
+    per_page: u64,
+) -> Result<Vec<dto::Article>, DbErr> {
+    Ok(Article::find()
+        .filter(Column::RssFeedId.eq(rss_feed_id))
+        .order_by_desc(Column::PubDate)
+        .paginate(db, per_page)
+        .fetch_page(page)
+        .await?
+        .into_iter()
+        .map(Into::into)
+        .collect())
 }
 
 pub async fn list_by_page_and_category(

@@ -20,7 +20,7 @@ use urlnorm::UrlNormalizer;
 
 use crate::article as article_service;
 
-pub async fn create(db: &DbConn, data: dto::CreateRssFeed) -> Result<rss_feed::Model> {
+pub async fn create(db: &DbConn, data: dto::CreateRssFeed) -> Result<dto::RssFeed> {
     let now = OffsetDateTime::now_utc().format(&Iso8601::DEFAULT)?;
     rss_feed::ActiveModel {
         id: Set(nanoid!().to_owned()),
@@ -36,30 +36,31 @@ pub async fn create(db: &DbConn, data: dto::CreateRssFeed) -> Result<rss_feed::M
     .insert(db)
     .await
     .map_err(|e| anyhow!(e))
+    .map(Into::into)
 }
 
-pub async fn find_by_id(db: &DbConn, id: &str) -> Result<Option<rss_feed::Model>, DbErr> {
-    RSSFeed::find_by_id(id).one(db).await
+pub async fn find_by_id(db: &DbConn, id: &str) -> Result<Option<dto::RssFeed>, DbErr> {
+    Ok(RSSFeed::find_by_id(id).one(db).await?.map(Into::into))
 }
 
 pub async fn list_by_page(
     db: &DbConn,
     page: u64,
     per_page: u64,
-) -> Result<Vec<rss_feed::Model>, DbErr> {
-    RSSFeed::find()
+) -> Result<Vec<dto::RssFeed>, DbErr> {
+    Ok(RSSFeed::find()
         .order_by_desc(rss_feed::Column::CreatedAt)
         .paginate(db, per_page)
         .fetch_page(page)
-        .await
+        .await?
+        .into_iter()
+        .map(Into::into)
+        .collect())
 }
 
-pub async fn update_by_id(
-    db: &DbConn,
-    id: &str,
-    data: dto::UpdateRssFeed,
-) -> Result<rss_feed::Model> {
-    let mut rss_feed: rss_feed::ActiveModel = find_by_id(db, id)
+pub async fn update_by_id(db: &DbConn, id: &str, data: dto::UpdateRssFeed) -> Result<dto::RssFeed> {
+    let mut rss_feed: rss_feed::ActiveModel = RSSFeed::find_by_id(id)
+        .one(db)
         .await?
         .ok_or(DbErr::Custom("Cannot find RSS feed.".to_owned()))
         .map(Into::into)?;
@@ -71,7 +72,8 @@ pub async fn update_by_id(
     rss_feed.display_description = Set(data.display_description);
     rss_feed.color = Set(data.color);
     rss_feed.abbreviation = Set(data.abbreviation);
-    rss_feed.update(db).await.map_err(|e| anyhow!(e))
+    let model = rss_feed.update(db).await.map_err(|e| anyhow!(e))?;
+    Ok(model.into())
 }
 
 pub async fn delete_by_id(db: &DbConn, id: &str) -> Result<()> {
@@ -87,7 +89,8 @@ pub async fn delete_by_id(db: &DbConn, id: &str) -> Result<()> {
     article_service::delete_by_rss_feed_id(db, id).await?;
 
     // remove the feed
-    let rss_feed: rss_feed::ActiveModel = find_by_id(db, id)
+    let rss_feed: rss_feed::ActiveModel = RSSFeed::find_by_id(id)
+        .one(db)
         .await?
         .ok_or(DbErr::Custom("Cannot find RSS feed.".to_owned()))
         .map(Into::into)?;
