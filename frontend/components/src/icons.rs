@@ -4,6 +4,7 @@ pub mod bars_3;
 pub mod chat_bubble_left_ellipsis;
 pub mod check;
 pub mod chevron_down;
+pub mod loading;
 pub mod minus;
 pub mod pencil_square;
 pub mod plus;

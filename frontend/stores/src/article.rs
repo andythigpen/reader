@@ -31,6 +31,10 @@ impl Default for ArticleStore {
 }
 
 impl ArticleStore {
+    pub fn by_article_id(&self, id: &str) -> Option<Article> {
+        self.articles.iter().find(|a| a.id == id).cloned()
+    }
+
     pub fn category_id(&mut self, category_id: Option<String>) {
         if self.category_id != category_id {
             self.articles.clear();

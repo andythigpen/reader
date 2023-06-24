@@ -55,7 +55,7 @@ pub fn readability_article(props: &Props) -> HtmlResult {
     Ok(html! {
         <div class={classes!("flex", "flex-col", "items-center", "m-2", "md:my-4")}>
             <h1 class={classes!("md:max-w-2xl", "text-3xl")}>{title}</h1>
-            <aside class={classes!("text-sm", "my-2")}>
+            <aside class={classes!("text-sm", "my-4")}>
                 {"Published at "}<Date value={pub_date}/>
                 {" | "}
                 <a href={url} class={classes!("text-sky-400")}>{"Original Article"}</a>
