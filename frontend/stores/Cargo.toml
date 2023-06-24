@@ -8,7 +8,7 @@ name = "stores"
 path = "src/lib.rs"
 
 [dependencies]
-entity = { path = "../../entity" }
+dto = { path = "../../dto" }
 gloo-net = "0.2.6"
 serde = "1.0.164"
 wasm-bindgen-futures = "0.4.36"

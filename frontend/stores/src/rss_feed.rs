@@ -1,4 +1,4 @@
-use entity::rss_feed::Model as RssFeed;
+use dto::RssFeed;
 use gloo_net::http::Request;
 use serde::{Deserialize, Serialize};
 use yewdux::prelude::*;

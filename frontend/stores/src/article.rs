@@ -1,4 +1,4 @@
-use entity::article::Model as Article;
+use dto::Article;
 use gloo_net::http::Request;
 use serde::{Deserialize, Serialize};
 use yewdux::prelude::*;

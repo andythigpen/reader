@@ -735,7 +735,6 @@ version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "dto",
- "entity",
  "gloo-net 0.2.6",
  "gloo-utils",
  "log",
@@ -3269,7 +3268,7 @@ dependencies = [
 name = "stores"
 version = "0.1.0"
 dependencies = [
- "entity",
+ "dto",
  "gloo-net 0.2.6",
  "serde",
  "wasm-bindgen-futures",

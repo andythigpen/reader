@@ -1,4 +1,4 @@
-use entity::category::Model;
+use dto::Category;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 
@@ -7,12 +7,12 @@ use crate::input_text::InputText;
 
 pub enum ModalAction {
     Close,
-    Confirm(Model),
+    Confirm(Category),
 }
 
 #[derive(Properties, PartialEq, Clone)]
 pub struct Props {
-    pub model: Option<Model>,
+    pub model: Option<Category>,
 
     #[prop_or_default]
     pub onclose: Callback<ModalAction>,
@@ -24,7 +24,7 @@ pub fn category_form(props: &Props) -> Html {
         props
             .model
             .to_owned()
-            .unwrap_or(Model {
+            .unwrap_or(Category {
                 id: "".to_string(),
                 name: "".to_string(),
                 description: "".to_string(),
@@ -50,7 +50,7 @@ pub fn category_form(props: &Props) -> Html {
         let model = model.clone();
         Callback::from(move |e: FocusEvent| {
             let input: HtmlInputElement = e.target_unchecked_into();
-            model.set(Model {
+            model.set(Category {
                 name: input.value(),
                 ..(*model).clone()
             });
@@ -60,7 +60,7 @@ pub fn category_form(props: &Props) -> Html {
         let model = model.clone();
         Callback::from(move |e: FocusEvent| {
             let input: HtmlInputElement = e.target_unchecked_into();
-            model.set(Model {
+            model.set(Category {
                 description: input.value(),
                 ..(*model).clone()
             });

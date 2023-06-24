@@ -1,4 +1,4 @@
-use entity::rss_feed::Model;
+use dto::RssFeed;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 
@@ -9,12 +9,12 @@ use crate::input_text::InputText;
 
 pub enum ModalAction {
     Close,
-    Confirm(Model),
+    Confirm(RssFeed),
 }
 
 #[derive(Properties, PartialEq, Clone)]
 pub struct Props {
-    pub model: Option<Model>,
+    pub model: Option<RssFeed>,
 
     #[prop_or_default]
     pub onclose: Callback<ModalAction>,
@@ -26,7 +26,7 @@ pub fn rss_feed_form(props: &Props) -> Html {
         props
             .model
             .to_owned()
-            .unwrap_or(Model {
+            .unwrap_or(RssFeed {
                 id: "".to_string(),
                 name: "".to_string(),
                 description: "".to_string(),
@@ -58,7 +58,7 @@ pub fn rss_feed_form(props: &Props) -> Html {
         let model = model.clone();
         Callback::from(move |e: FocusEvent| {
             let input: HtmlInputElement = e.target_unchecked_into();
-            model.set(Model {
+            model.set(RssFeed {
                 name: input.value(),
                 ..(*model).clone()
             });
@@ -68,7 +68,7 @@ pub fn rss_feed_form(props: &Props) -> Html {
         let model = model.clone();
         Callback::from(move |e: FocusEvent| {
             let input: HtmlInputElement = e.target_unchecked_into();
-            model.set(Model {
+            model.set(RssFeed {
                 description: input.value(),
                 ..(*model).clone()
             });
@@ -78,7 +78,7 @@ pub fn rss_feed_form(props: &Props) -> Html {
         let model = model.clone();
         Callback::from(move |e: FocusEvent| {
             let input: HtmlInputElement = e.target_unchecked_into();
-            model.set(Model {
+            model.set(RssFeed {
                 abbreviation: input.value(),
                 ..(*model).clone()
             });
@@ -88,7 +88,7 @@ pub fn rss_feed_form(props: &Props) -> Html {
         let model = model.clone();
         Callback::from(move |e: FocusEvent| {
             let input: HtmlInputElement = e.target_unchecked_into();
-            model.set(Model {
+            model.set(RssFeed {
                 url: input.value(),
                 ..(*model).clone()
             });
@@ -98,7 +98,7 @@ pub fn rss_feed_form(props: &Props) -> Html {
         let model = model.clone();
         Callback::from(move |e: Event| {
             let input: HtmlInputElement = e.target_unchecked_into();
-            model.set(Model {
+            model.set(RssFeed {
                 color: input.value(),
                 ..(*model).clone()
             });
@@ -108,7 +108,7 @@ pub fn rss_feed_form(props: &Props) -> Html {
         let model = model.clone();
         Callback::from(move |e: Event| {
             let input: HtmlInputElement = e.target_unchecked_into();
-            model.set(Model {
+            model.set(RssFeed {
                 display_description: input.checked(),
                 ..(*model).clone()
             });

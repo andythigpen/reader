@@ -1,4 +1,4 @@
-use entity::category::Model as Category;
+use dto::Category;
 use gloo_net::http::Request;
 use stores::category::CategoryStore;
 use stores::rss_feed::RssFeedStore;
