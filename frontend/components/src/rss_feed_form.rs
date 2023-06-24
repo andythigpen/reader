@@ -5,6 +5,7 @@ use yew::prelude::*;
 use crate::button::Button;
 use crate::input_checkbox::InputCheckbox;
 use crate::input_color::InputColor;
+use crate::input_number::InputNumber;
 use crate::input_text::InputText;
 
 pub enum ModalAction {
@@ -36,6 +37,7 @@ pub fn rss_feed_form(props: &Props) -> Html {
                 display_description: false,
                 abbreviation: "".to_string(),
                 color: "#6590D5".to_string(),
+                update_interval_mins: 360,
             })
             .clone()
     });
@@ -94,6 +96,16 @@ pub fn rss_feed_form(props: &Props) -> Html {
             });
         })
     };
+    let blur_update_interval = {
+        let model = model.clone();
+        Callback::from(move |e: FocusEvent| {
+            let input: HtmlInputElement = e.target_unchecked_into();
+            model.set(RssFeed {
+                update_interval_mins: input.value().parse().unwrap(),
+                ..(*model).clone()
+            });
+        })
+    };
     let change_color = {
         let model = model.clone();
         Callback::from(move |e: Event| {
@@ -125,6 +137,8 @@ pub fn rss_feed_form(props: &Props) -> Html {
             <InputText name="abbreviation" label="Abbreviation" value={model.abbreviation.clone()} onblur={blur_abbreviation} />
             <InputText name="url" label="URL" value={model.url.clone()} onblur={blur_url} />
             <InputColor name="color" label="Color" value={model.color.clone()} onchange={change_color} />
+            <InputNumber name="update_interval_mins" label="Update interval (minutes)"
+                value={model.update_interval_mins.to_string()} onblur={blur_update_interval} />
 
             <InputCheckbox name="display_description" label="Display article descriptions"
                 checked={model.display_description} onchange={change_display_description} />

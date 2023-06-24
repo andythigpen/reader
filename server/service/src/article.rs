@@ -9,6 +9,7 @@ use sea_orm::{
     ColumnTrait, DbConn, DbErr, EntityTrait, JoinType, PaginatorTrait, QueryFilter, QueryOrder,
     QuerySelect, RelationTrait,
 };
+use time::{format_description::well_known::Iso8601, OffsetDateTime};
 use tokio::task;
 
 pub async fn find_by_id(db: &DbConn, id: &str) -> Result<Option<dto::Article>, DbErr> {
@@ -79,6 +80,17 @@ pub async fn list_by_page_and_category(
 pub async fn delete_by_rss_feed_id(db: &DbConn, rss_feed_id: &str) -> Result<()> {
     Article::delete_many()
         .filter(Column::RssFeedId.eq(rss_feed_id))
+        .exec(db)
+        .await?;
+    Ok(())
+}
+
+pub async fn delete_old_articles(db: &DbConn) -> Result<()> {
+    let oldest = OffsetDateTime::now_utc()
+        .saturating_sub(time::Duration::days(7))
+        .format(&Iso8601::DEFAULT)?;
+    Article::delete_many()
+        .filter(Column::CreatedAt.lt(oldest))
         .exec(db)
         .await?;
     Ok(())

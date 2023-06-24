@@ -75,6 +75,11 @@ async fn start() -> Result<()> {
         .expect("Database connection failed");
     Migrator::up(&conn, None).await.unwrap();
 
+    {
+        let conn = conn.clone();
+        tokio::spawn(async move { service::rss_feed::run_periodic_tasks(conn).await });
+    }
+
     let state = Arc::new(AppState { conn });
 
     let app = Router::new()

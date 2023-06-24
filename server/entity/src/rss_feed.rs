@@ -16,6 +16,8 @@ pub struct Model {
     pub display_description: bool,
     pub abbreviation: String,
     pub color: String,
+    pub next_update: Option<String>,
+    pub update_interval_mins: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

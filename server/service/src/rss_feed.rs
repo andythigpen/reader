@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use anyhow::{anyhow, Result};
 use dto;
 use entity::{
@@ -32,6 +34,8 @@ pub async fn create(db: &DbConn, data: dto::CreateRssFeed) -> Result<dto::RssFee
         display_description: Set(data.display_description),
         color: Set(data.color.to_owned()),
         abbreviation: Set(data.abbreviation.to_owned()),
+        update_interval_mins: Set(data.update_interval_mins as i32),
+        next_update: Set(Some(now.to_owned())),
     }
     .insert(db)
     .await
@@ -72,6 +76,7 @@ pub async fn update_by_id(db: &DbConn, id: &str, data: dto::UpdateRssFeed) -> Re
     rss_feed.display_description = Set(data.display_description);
     rss_feed.color = Set(data.color);
     rss_feed.abbreviation = Set(data.abbreviation);
+    rss_feed.update_interval_mins = Set(data.update_interval_mins as i32);
     let model = rss_feed.update(db).await.map_err(|e| anyhow!(e))?;
     Ok(model.into())
 }
@@ -150,11 +155,15 @@ async fn save_article(
 }
 
 pub async fn fetch_articles(db: &DbConn, id: &str) -> Result<()> {
-    let rss_feed = find_by_id(db, id)
+    let rss_feed: rss_feed::Model = RSSFeed::find_by_id(id)
+        .one(db)
         .await?
-        .ok_or(DbErr::Custom("Cannot find RSS feed.".to_owned()))?;
+        .ok_or(DbErr::Custom("Cannot find RSS feed.".to_owned()))
+        .map(Into::into)?;
 
-    let content = reqwest::get(rss_feed.url).await?.bytes().await?;
+    log::info!("fetching articles for feed {id}");
+
+    let content = reqwest::get(&rss_feed.url).await?.bytes().await?;
     let channel = Channel::read_from(&content[..])?;
 
     future::try_join_all(
@@ -165,12 +174,38 @@ pub async fn fetch_articles(db: &DbConn, id: &str) -> Result<()> {
     )
     .await?;
 
+    let next_update = OffsetDateTime::now_utc()
+        .saturating_add(time::Duration::minutes(
+            rss_feed.update_interval_mins as i64,
+        ))
+        .format(&Iso8601::DEFAULT)?;
+    log::info!("saved articles for feed {id}, next update at {next_update}");
+
+    let mut rss_feed: rss_feed::ActiveModel = rss_feed.into();
+    rss_feed.next_update = Set(Some(next_update));
+    rss_feed.update(db).await?;
+
     Ok(())
 }
 
 pub async fn fetch_all_articles(db: &DbConn) -> Result<()> {
     let rss_feeds: Vec<(String,)> = RSSFeed::find()
         .select_only()
+        .columns([rss_feed::Column::Id])
+        .into_tuple()
+        .all(db)
+        .await?;
+
+    future::try_join_all(rss_feeds.iter().map(|(id,)| fetch_articles(db, id))).await?;
+
+    Ok(())
+}
+
+pub async fn fetch_periodic_articles(db: &DbConn) -> Result<()> {
+    let now = OffsetDateTime::now_utc().format(&Iso8601::DEFAULT)?;
+    let rss_feeds: Vec<(String,)> = RSSFeed::find()
+        .select_only()
+        .filter(rss_feed::Column::NextUpdate.lt(now))
         .columns([rss_feed::Column::Id])
         .into_tuple()
         .all(db)
@@ -211,4 +246,23 @@ pub async fn remove_from_category(db: &DbConn, id: &str, category_id: &str) -> R
         .exec(db)
         .await?;
     Ok(())
+}
+
+pub async fn run_periodic_tasks(db: DbConn) {
+    let mut interval = tokio::time::interval(Duration::from_secs(60));
+
+    loop {
+        interval.tick().await;
+        log::info!("running periodic tasks");
+        let db = db.clone();
+        tokio::spawn(async move {
+            if let Err(e) = fetch_periodic_articles(&db).await {
+                log::error!("failed to fetch articles: {e}");
+            }
+
+            if let Err(e) = article_service::delete_old_articles(&db).await {
+                log::error!("failed to delete old articles: {e}");
+            }
+        });
+    }
 }

@@ -9,6 +9,7 @@ pub struct CreateRssFeed {
     pub display_description: bool,
     pub color: String,
     pub abbreviation: String,
+    pub update_interval_mins: u16,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -19,6 +20,7 @@ pub struct UpdateRssFeed {
     pub display_description: bool,
     pub color: String,
     pub abbreviation: String,
+    pub update_interval_mins: u16,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -32,6 +34,7 @@ pub struct RssFeed {
     pub display_description: bool,
     pub abbreviation: String,
     pub color: String,
+    pub update_interval_mins: u16,
 }
 
 impl From<rss_feed::Model> for RssFeed {
@@ -46,6 +49,7 @@ impl From<rss_feed::Model> for RssFeed {
             display_description: value.display_description,
             abbreviation: value.abbreviation,
             color: value.color,
+            update_interval_mins: value.update_interval_mins as u16,
         }
     }
 }

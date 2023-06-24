@@ -12,6 +12,7 @@ pub mod header_dropdown_item;
 pub mod icons;
 pub mod input_checkbox;
 pub mod input_color;
+pub mod input_number;
 pub mod input_text;
 pub mod list_item;
 pub mod list_item_thumb;
