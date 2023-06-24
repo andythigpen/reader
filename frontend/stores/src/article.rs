@@ -3,11 +3,17 @@ use gloo_net::http::Request;
 use serde::{Deserialize, Serialize};
 use yewdux::prelude::*;
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ArticleFilter {
+    RssFeed(String),
+    Category(String),
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Store, Serialize, Deserialize)]
 #[store(storage = "session")]
 pub struct ArticleStore {
     pub articles: Vec<Article>,
-    category_id: Option<String>,
+    filter: Option<ArticleFilter>,
     // true when a fetch is currently in progress
     pub fetching: bool,
     // true when the last attempt to fetch articles returns less than the per_page amount...meaning
@@ -21,7 +27,7 @@ impl Default for ArticleStore {
     fn default() -> Self {
         Self {
             articles: vec![],
-            category_id: None,
+            filter: None,
             fetching: false,
             at_end: false,
             per_page: 20,
@@ -35,14 +41,14 @@ impl ArticleStore {
         self.articles.iter().find(|a| a.id == id).cloned()
     }
 
-    pub fn category_id(&mut self, category_id: Option<String>) {
-        if self.category_id != category_id {
+    pub fn filter(&mut self, filter: Option<ArticleFilter>) {
+        if self.filter != filter {
             self.articles.clear();
             self.fetching = false;
             self.at_end = false;
             self.page = 0;
         }
-        self.category_id = category_id;
+        self.filter = filter;
     }
 
     pub async fn reload(&mut self) {
@@ -63,10 +69,10 @@ impl ArticleStore {
         let page = self.page;
         let per_page = self.per_page;
 
-        let endpoint = if let Some(category_id) = &self.category_id {
-            format!("/api/categories/{}/articles", category_id)
-        } else {
-            "/api/articles".to_string()
+        let endpoint = match &self.filter {
+            Some(ArticleFilter::RssFeed(id)) => format!("/api/rss_feeds/{}/articles", id),
+            Some(ArticleFilter::Category(id)) => format!("/api/categories/{}/articles", id),
+            None => "/api/articles".to_string(),
         };
 
         let resp = Request::get(&endpoint)

@@ -1,8 +1,7 @@
+use hooks::use_page_reload;
 use router::Route;
 use stores::{category::CategoryStore, rss_feed::RssFeedStore};
-use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
-use web_sys::{window, NavigationType, PerformanceNavigationTiming};
 use yew::prelude::*;
 use yew_router::prelude::*;
 use yewdux::prelude::*;
@@ -30,30 +29,13 @@ pub fn home(props: &Props) -> Html {
 
     let route = use_route::<Route>();
 
-    // reload the article store when the browser reloads the page
-    use_effect_with_deps(
-        {
-            move |_| {
-                let arr = window()
-                    .unwrap()
-                    .performance()
-                    .unwrap()
-                    .get_entries_by_type("navigation");
-                for elem in arr {
-                    let entry: PerformanceNavigationTiming = elem.unchecked_into();
-                    if entry.type_() == NavigationType::Reload {
-                        spawn_local(async move {
-                            Dispatch::<ArticleStore>::new()
-                                .reduce_mut_future(|s| Box::pin(async move { s.reload().await }))
-                                .await;
-                        });
-                    }
-                }
-                || ()
-            }
-        },
-        (),
-    );
+    use_page_reload(|| {
+        spawn_local(async move {
+            Dispatch::<ArticleStore>::new()
+                .reduce_mut_future(|s| Box::pin(async move { s.reload().await }))
+                .await
+        });
+    });
 
     use_effect_with_deps(
         |_| {

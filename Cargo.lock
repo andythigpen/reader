@@ -1504,6 +1504,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
+name = "hooks"
+version = "0.1.0"
+dependencies = [
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "yew",
+ "yewdux",
+]
+
+[[package]]
 name = "html5ever"
 version = "0.25.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2105,11 +2116,11 @@ name = "pages"
 version = "0.1.0"
 dependencies = [
  "components",
+ "hooks",
  "router",
  "stores",
  "wasm-bindgen",
  "wasm-bindgen-futures",
- "web-sys",
  "yew",
  "yew-router",
  "yewdux",

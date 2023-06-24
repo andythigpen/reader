@@ -1,5 +1,5 @@
 use router::Route;
-use stores::article::ArticleStore;
+use stores::article::{ArticleFilter, ArticleStore};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
 use web_sys::{
@@ -16,12 +16,16 @@ use crate::list_item::ListItem;
 pub struct Props {
     #[prop_or_default]
     pub category_id: Option<String>,
+
+    #[prop_or_default]
+    pub rss_feed_id: Option<String>,
 }
 
 #[function_component(ArticleList)]
 pub fn article_list(props: &Props) -> Html {
-    let (store, dispatch) = use_store::<ArticleStore>();
-    dispatch.reduce_mut(|s| s.category_id(props.category_id.clone()));
+    let articles = use_selector(|s: &ArticleStore| s.articles.clone());
+    let category_id = props.category_id.clone();
+    let rss_feed_id = props.rss_feed_id.clone();
 
     let route = use_route::<Route>();
 
@@ -29,6 +33,16 @@ pub fn article_list(props: &Props) -> Html {
 
     use_effect_with_deps(
         |_| {
+            Dispatch::<ArticleStore>::new().reduce_mut(|s| {
+                let filter = if let Some(id) = category_id {
+                    Some(ArticleFilter::Category(id.clone()))
+                } else if let Some(id) = rss_feed_id {
+                    Some(ArticleFilter::RssFeed(id.clone()))
+                } else {
+                    None
+                };
+                s.filter(filter);
+            });
             spawn_local(async move {
                 Dispatch::<ArticleStore>::new()
                     .reduce_mut_future(|s| Box::pin(async move { s.fetch().await }))
@@ -76,13 +90,12 @@ pub fn article_list(props: &Props) -> Html {
         node.clone(),
     );
 
-    let articles = if store.articles.is_empty() {
+    let articles = if articles.is_empty() {
         html! {
             <ListItem>{"No articles found."}</ListItem>
         }
     } else {
-        store
-            .articles
+        articles
             .iter()
             .enumerate()
             .map(|(id, _)| html! { <Article key={id} {id} /> })

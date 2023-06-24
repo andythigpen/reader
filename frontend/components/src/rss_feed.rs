@@ -108,12 +108,16 @@ pub fn rss_feed(&Props { id }: &Props) -> Html {
                     <Button onclick={delete_confirm} primary=true>{"Delete"}</Button>
                 </div>
             </Modal>
-            <ListItemThumb text={model.abbreviation.to_uppercase()} color={model.color.clone()} />
-            <div class={classes!("flex", "flex-col", "flex-1")}>
-                <h2 class={classes!("dark:text-white", "text-lg")}>{model.name.clone()}</h2>
-                <span class={classes!("text-sm")}>{"Created on "}{created_at}</span>
-                <p>{model.description.clone()}</p>
-            </div>
+            <Link<Route> to={Route::RssFeedArticles{ id: model.id.clone() }} classes={classes!(
+                "flex-1", "flex", "flex-row", "items-center"
+            )}>
+                <ListItemThumb text={model.abbreviation.to_uppercase()} color={model.color.clone()} />
+                <div class={classes!("flex", "flex-col", "flex-1")}>
+                    <h2 class={classes!("dark:text-white", "text-lg")}>{model.name.clone()}</h2>
+                    <span class={classes!("text-sm")}>{"Created on "}{created_at}</span>
+                    <p>{model.description.clone()}</p>
+                </div>
+            </Link<Route>>
             <div class={classes!("flex", "flex-row", "items-center", "gap-4")}>
                 <Link<Route> to={Route::RssFeedCategories{ id: model.id.clone() }}>
                     <IconTag class={classes!("cursor-pointer")} />

@@ -1,17 +1,17 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use pages::article::Article;
-use pages::categories::Categories;
-use pages::home::Home;
-use pages::rss_feed_categories::RssFeedCategories;
-use pages::rss_feeds::RssFeeds;
+use pages::{
+    article::Article, categories::Categories, home::Home, rss_feed_articles::RssFeedArticles,
+    rss_feed_categories::RssFeedCategories, rss_feeds::RssFeeds,
+};
 use router::Route;
 
 fn switch(routes: Route) -> Html {
     match routes {
         Route::Home => html! { <Home /> },
         Route::RssFeeds => html! { <RssFeeds /> },
+        Route::RssFeedArticles { id } => html! { <RssFeedArticles {id} /> },
         Route::RssFeedCategories { id } => html! { <RssFeedCategories {id} /> },
         Route::Categories => html! { <Categories /> },
         Route::CategoryArticles { id } => html! { <Home category_id={id} /> },

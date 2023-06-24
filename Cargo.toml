@@ -3,6 +3,7 @@ members = [
     "dto",
     "frontend",
     "frontend/components",
+    "frontend/hooks",
     "frontend/pages",
     "frontend/router",
     "frontend/stores",

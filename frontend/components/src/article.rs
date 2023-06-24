@@ -35,7 +35,9 @@ pub fn article(&Props { id }: &Props) -> Html {
 
     html! {
         <ListItem>
-            <ListItemThumb text={abbreviation} color={thumb_color} />
+            <Link<Route> to={Route::RssFeedArticles{ id: article.rss_feed_id.clone() }}>
+                <ListItemThumb text={abbreviation} color={thumb_color} />
+            </Link<Route>>
             <div class={classes!("flex", "flex-col", "md:flex-row", "flex-1", "md:items-center", "justify-between")}>
                 <Link<Route> to={Route::ReadabilityArticle{ id: article.id.clone() }}>
                     <h2 class={classes!("text-lg", "dark:text-white")}>
