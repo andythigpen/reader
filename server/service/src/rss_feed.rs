@@ -149,7 +149,7 @@ async fn save_article(
     .map_err(|e| anyhow!(e))
 }
 
-pub async fn fetch_articles(db: &DbConn, id: &str) -> Result<Vec<article::Model>> {
+pub async fn fetch_articles(db: &DbConn, id: &str) -> Result<()> {
     let rss_feed = find_by_id(db, id)
         .await?
         .ok_or(DbErr::Custom("Cannot find RSS feed.".to_owned()))?;
@@ -163,7 +163,9 @@ pub async fn fetch_articles(db: &DbConn, id: &str) -> Result<Vec<article::Model>
             .iter()
             .map(|it| async { save_article(db, id, rss_feed.display_description, it).await }),
     )
-    .await
+    .await?;
+
+    Ok(())
 }
 
 pub async fn fetch_all_articles(db: &DbConn) -> Result<()> {

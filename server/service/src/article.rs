@@ -1,8 +1,7 @@
 use anyhow::{anyhow, Result};
 use dto;
 use entity::{
-    article::Column, article::Entity as Article, article::Model, rss_feed::Entity as RssFeed,
-    rss_feed_category,
+    article::Column, article::Entity as Article, rss_feed::Entity as RssFeed, rss_feed_category,
 };
 use readability::extractor;
 use sea_orm::{
@@ -12,16 +11,23 @@ use sea_orm::{
 };
 use tokio::task;
 
-pub async fn find_by_id(db: &DbConn, id: &str) -> Result<Option<Model>, DbErr> {
-    Article::find_by_id(id).one(db).await
+pub async fn find_by_id(db: &DbConn, id: &str) -> Result<Option<dto::Article>, DbErr> {
+    Ok(Article::find_by_id(id).one(db).await?.map(Into::into))
 }
 
-pub async fn list_by_page(db: &DbConn, page: u64, per_page: u64) -> Result<Vec<Model>, DbErr> {
-    Article::find()
+pub async fn list_by_page(
+    db: &DbConn,
+    page: u64,
+    per_page: u64,
+) -> Result<Vec<dto::Article>, DbErr> {
+    Ok(Article::find()
         .order_by_desc(Column::PubDate)
         .paginate(db, per_page)
         .fetch_page(page)
-        .await
+        .await?
+        .into_iter()
+        .map(Into::into)
+        .collect())
 }
 
 pub async fn list_by_page_and_rss_feed(
@@ -46,9 +52,9 @@ pub async fn list_by_page_and_category(
     category_id: &str,
     page: u64,
     per_page: u64,
-) -> Result<Vec<Model>, DbErr> {
+) -> Result<Vec<dto::Article>, DbErr> {
     let category_id = category_id.to_owned();
-    Article::find()
+    Ok(Article::find()
         .left_join(RssFeed)
         .join(
             JoinType::InnerJoin,
@@ -64,7 +70,10 @@ pub async fn list_by_page_and_category(
         .order_by_desc(Column::PubDate)
         .paginate(db, per_page)
         .fetch_page(page)
-        .await
+        .await?
+        .into_iter()
+        .map(Into::into)
+        .collect())
 }
 
 pub async fn delete_by_rss_feed_id(db: &DbConn, rss_feed_id: &str) -> Result<()> {

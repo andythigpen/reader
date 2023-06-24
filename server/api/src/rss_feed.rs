@@ -7,8 +7,6 @@ use axum::{
 use dto;
 use std::sync::Arc;
 
-use entity::{article, category};
-
 use crate::{error::RestError, pagination::Pagination, AppState};
 
 async fn list(
@@ -58,9 +56,10 @@ async fn delete(
 async fn fetch_articles(
     Path(id): Path<String>,
     State(state): State<Arc<AppState>>,
-) -> Result<Json<Vec<article::Model>>, RestError> {
-    let resp = service::rss_feed::fetch_articles(&state.conn, &id).await?;
-    Ok(resp.into())
+) -> Result<(), RestError> {
+    service::rss_feed::fetch_articles(&state.conn, &id)
+        .await
+        .map_err(Into::into)
 }
 
 async fn fetch_all(State(state): State<Arc<AppState>>) -> Result<(), RestError> {
@@ -72,7 +71,7 @@ async fn fetch_all(State(state): State<Arc<AppState>>) -> Result<(), RestError> 
 async fn list_categories(
     Path(id): Path<String>,
     State(state): State<Arc<AppState>>,
-) -> Result<Json<Vec<category::Model>>, RestError> {
+) -> Result<Json<Vec<dto::Category>>, RestError> {
     let resp = service::category::list_by_rss_feed(&state.conn, &id).await?;
     Ok(resp.into())
 }
