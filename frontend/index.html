@@ -6,10 +6,20 @@
     <link rel="shortcut icon" type="image/x-icon" href="data:image/x-icon;," />
     <link data-trunk rel="rust" href="Cargo.toml" data-wasm-opt="z" />
     <link data-trunk rel="css" href="app.css" />
+    <link data-trunk rel="copy-file" href="manifest.json" />
+    <link data-trunk rel="copy-file" href="sw.js" />
+    <link data-trunk rel="copy-dir" href="assets" />
+    <link rel="manifest" href="manifest.json" />
     <title>Reader</title>
   </head>
 
   <body class="h-screen">
     loading...
+
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js");
+      }
+    </script>
   </body>
 </html>
