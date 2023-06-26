@@ -128,25 +128,27 @@ pub fn rss_feed_form(props: &Props) -> Html {
     };
 
     html! {
-        <>
-            <h1 class={classes!("text-xl", "mb-4")}>{action}{" RSS Feed"}</h1>
+        <div class={classes!("relative", "flex", "flex-col", "gap-4", "max-h-[calc(100vh-6rem-2.5rem-1rem)]")}>
+            <h1 class={classes!("text-xl", "flex-0")}>{action}{" RSS Feed"}</h1>
 
-            <InputText name="name" label="Name" value={model.name.clone()} onblur={blur_name} />
-            <InputText name="description" label="Description" value={model.description.clone()}
-                onblur={blur_description} />
-            <InputText name="abbreviation" label="Abbreviation" value={model.abbreviation.clone()} onblur={blur_abbreviation} />
-            <InputText name="url" label="URL" value={model.url.clone()} onblur={blur_url} />
-            <InputColor name="color" label="Color" value={model.color.clone()} onchange={change_color} />
-            <InputNumber name="update_interval_mins" label="Update interval (minutes)"
-                value={model.update_interval_mins.to_string()} onblur={blur_update_interval} />
+            <div class={classes!("flex-1", "overflow-auto")}>
+                <InputText name="name" label="Name" value={model.name.clone()} onblur={blur_name} />
+                <InputText name="description" label="Description" value={model.description.clone()}
+                    onblur={blur_description} />
+                <InputText name="abbreviation" label="Abbreviation" value={model.abbreviation.clone()} onblur={blur_abbreviation} />
+                <InputText name="url" label="URL" value={model.url.clone()} onblur={blur_url} />
+                <InputColor name="color" label="Color" value={model.color.clone()} onchange={change_color} />
+                <InputNumber name="update_interval_mins" label="Update interval (minutes)"
+                    value={model.update_interval_mins.to_string()} onblur={blur_update_interval} />
 
-            <InputCheckbox name="display_description" label="Display article descriptions"
-                checked={model.display_description} onchange={change_display_description} />
+                <InputCheckbox name="display_description" label="Display article descriptions"
+                    checked={model.display_description} onchange={change_display_description} />
+            </div>
 
-            <div class={classes!("flex", "flex-row", "justify-end", "gap-1")}>
+            <div class={classes!("flex-0", "flex", "flex-row", "justify-end", "gap-1")}>
                 <Button onclick={cancel}>{"Cancel"}</Button>
                 <Button onclick={confirm} primary=true>{action}</Button>
             </div>
-        </>
+        </div>
     }
 }
