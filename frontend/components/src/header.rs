@@ -56,7 +56,7 @@ pub fn header(Props { children }: &Props) -> Html {
         "w-full",
         "max-w-5xl",
         "p-1",
-        // "py-2",
+        "z-10",
         "leading-10",
         "items-center",
         "sticky",

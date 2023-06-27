@@ -32,7 +32,7 @@ pub fn modal(
     html! {
         <div class={classes!(
             "fixed", "py-12", "bg-gray-800/75", "transition", "duration-150", "ease-in-out",
-            "z-10", "top-0", "right-0", "bottom-0", "left-0", "dark:text-white"
+            "z-50", "top-0", "right-0", "bottom-0", "left-0", "dark:text-white"
         )}>
             <div class={classes!("container", "mx-auto", "w-11/12", "md:w-2/3", "max-w-lg", "z-10")}>
                 <div class={classes!(

@@ -24,3 +24,4 @@ yew-hooks = "0.2.0"
 web-sys = { version = "0.3.63", features = ["HtmlDivElement", "HtmlElement", "IntersectionObserver", "IntersectionObserverEntry", "IntersectionObserverInit", "Window"] }
 wasm-bindgen = "0.2.86"
 gloo-utils = "0.1.7"
+hex_color = "2.0.0"
