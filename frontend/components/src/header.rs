@@ -22,18 +22,23 @@ pub struct Props {
 #[function_component(Header)]
 pub fn header(Props { children }: &Props) -> Html {
     let display_menu = use_state(|| false);
+    let refreshing = use_state(|| false);
 
     let onclick_refresh = {
         let display_menu = display_menu.clone();
+        let refreshing = refreshing.clone();
         Dispatch::<ArticleStore>::new().reduce_mut_future_callback(move |state| {
             let display_menu = display_menu.clone();
+            let refreshing = refreshing.clone();
             Box::pin(async move {
+                display_menu.set(false);
+                refreshing.set(true);
                 let resp = Request::post("/api/rss_feeds/fetch").send().await.unwrap();
-                if resp.status() == 200 {
+                if resp.ok() {
                     state.reload().await;
                     window().unwrap().scroll_with_x_and_y(0.0, 0.0);
-                    display_menu.set(false);
                 }
+                refreshing.set(false);
             })
         })
     };
@@ -81,7 +86,10 @@ pub fn header(Props { children }: &Props) -> Html {
             <div class={classes!("flex", "flex-col", "flex-1", "relative", "items-center")}>
                 {for children.iter()}
             </div>
-            <div class={classes!("relative")}>
+            <div class={classes!("relative", "flex", "flex-row", "items-center", "gap-2")}>
+                if *refreshing {
+                    <IconArrowPath class={classes!("animate-spin")} />
+                }
                 <div onclick={onclick_menu} class={classes!("flex", "flex-col", "h-10", "justify-center")}>
                     if !*display_menu {
                         <IconBars3 class={classes!("mx-2", "cursor-pointer")}/>
