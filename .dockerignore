@@ -1,0 +1,6 @@
+*
+!dto/
+!frontend/
+!server/
+!Cargo.lock
+!Cargo.toml

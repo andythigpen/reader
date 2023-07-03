@@ -56,14 +56,14 @@ async fn handle_error(error: BoxError) -> impl IntoResponse {
 
 #[tokio::main]
 async fn start() -> Result<()> {
-    let db_url = env::var("DATABASE_URL").unwrap_or("sqlite://reader.db?mode=rwc".to_string());
+    let db_url = env::var("DATABASE_URL").unwrap_or("sqlite://data/reader.db?mode=rwc".to_string());
     let static_dir = env::var("STATIC_DIR").unwrap_or("./dist".to_string());
     let addr = env::var("ADDR").unwrap_or("::1".to_string());
     let port: u16 = env::var("PORT")
         .unwrap_or("8080".to_string())
         .parse()
         .unwrap();
-    let log_level = env::var("LOG_LEVEL").unwrap_or("debug".to_string());
+    let log_level = env::var("LOG_LEVEL").unwrap_or("info".to_string());
     if env::var("RUST_LOG").is_err() {
         env::set_var("RUST_LOG", format!("{},hyper=info,mio=info", log_level))
     }
