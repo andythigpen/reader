@@ -2,8 +2,9 @@ use yew::prelude::*;
 use yew_router::prelude::*;
 
 use pages::{
-    article::Article, categories::Categories, home::Home, rss_feed_articles::RssFeedArticles,
-    rss_feed_categories::RssFeedCategories, rss_feeds::RssFeeds,
+    article::Article, categories::Categories, filters::Filters, home::Home,
+    rss_feed_articles::RssFeedArticles, rss_feed_categories::RssFeedCategories,
+    rss_feeds::RssFeeds,
 };
 use router::Route;
 
@@ -16,6 +17,7 @@ fn switch(routes: Route) -> Html {
         Route::Categories => html! { <Categories /> },
         Route::CategoryArticles { id } => html! { <Home category_id={id} /> },
         Route::ReadabilityArticle { id } => html! { <Article {id} /> },
+        Route::Filters => html! { <Filters /> },
     }
 }
 

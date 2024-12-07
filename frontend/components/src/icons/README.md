@@ -1,1 +1,1 @@
-SVGs frmo https://heroicons.com
+SVGs from https://heroicons.com

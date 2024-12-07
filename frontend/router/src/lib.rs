@@ -16,4 +16,6 @@ pub enum Route {
     CategoryArticles { id: String },
     #[at("/articles/:id")]
     ReadabilityArticle { id: String },
+    #[at("/filters")]
+    Filters,
 }

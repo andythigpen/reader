@@ -9,6 +9,7 @@ use yewdux::prelude::*;
 use crate::header_dropdown::HeaderDropdown;
 use crate::header_dropdown_item::HeaderDropdownItem;
 use crate::icons::arrow_path::IconArrowPath;
+use crate::icons::funnel::IconFunnel;
 use crate::icons::tag::IconTag;
 use crate::icons::x_mark::IconXMark;
 use crate::icons::{bars_3::IconBars3, rss::IconRss};
@@ -112,6 +113,14 @@ pub fn header(Props { children }: &Props) -> Html {
                         )}>
                             <IconTag />
                             {"Categories"}
+                        </Link<Route>>
+                    </HeaderDropdownItem>
+                    <HeaderDropdownItem>
+                        <Link<Route> to={Route::Filters} classes={classes!(
+                            "block", "px-8", "sm:px-4", "py-4", "flex", "flex-row", "gap-2", "items-center"
+                        )}>
+                            <IconFunnel />
+                            {"Filters"}
                         </Link<Route>>
                     </HeaderDropdownItem>
                     <HeaderDropdownItem>
