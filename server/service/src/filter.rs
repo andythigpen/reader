@@ -3,6 +3,16 @@ use entity::{filter, filter::Entity as Filter};
 use nanoid::nanoid;
 use sea_orm::{ActiveModelTrait, DbConn, DbErr, EntityTrait, PaginatorTrait, QueryOrder, Set};
 
+pub async fn list_all(db: &DbConn) -> Result<Vec<dto::Filter>, DbErr> {
+    Ok(Filter::find()
+        .order_by_desc(filter::Column::Id)
+        .all(db)
+        .await?
+        .into_iter()
+        .map(Into::into)
+        .collect())
+}
+
 pub async fn list_by_page(
     db: &DbConn,
     page: u64,

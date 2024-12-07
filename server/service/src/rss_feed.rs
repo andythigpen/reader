@@ -21,7 +21,7 @@ use time::{
 };
 use urlnorm::UrlNormalizer;
 
-use crate::{article as article_service, APP_USER_AGENT};
+use crate::{article as article_service, filter as filter_service, APP_USER_AGENT};
 
 pub async fn create(db: &DbConn, data: dto::CreateRssFeed) -> Result<dto::RssFeed> {
     let now = OffsetDateTime::now_utc().format(&Iso8601::DEFAULT)?;
@@ -208,16 +208,30 @@ async fn save_atom_article(
     .map_err(|e| anyhow!(e))
 }
 
+fn filter_rss_article(keywords: &Vec<dto::Filter>, item: &Item) -> bool {
+    for keyword in keywords {
+        if item.title().unwrap_or("").contains(&keyword.keyword) {
+            return false;
+        }
+        if item.description().unwrap_or("").contains(&keyword.keyword) {
+            return false;
+        }
+    }
+    return true;
+}
+
 async fn save_rss_items(
     db: &DbConn,
     rss_feed_id: &str,
     display_description: bool,
     channel: Channel,
+    filter_keywords: &Vec<dto::Filter>,
 ) -> Result<()> {
     future::try_join_all(
         channel
             .items()
             .iter()
+            .filter(|it| filter_rss_article(&filter_keywords, it))
             .map(|it| async { save_rss_article(db, rss_feed_id, display_description, it).await }),
     )
     .await?;
@@ -225,15 +239,33 @@ async fn save_rss_items(
     Ok(())
 }
 
+fn filter_atom_entry(keywords: &Vec<dto::Filter>, item: &Entry) -> bool {
+    for keyword in keywords {
+        if item.title().contains(&keyword.keyword) {
+            return false;
+        }
+        if item
+            .summary()
+            .map_or("".to_string(), |s| s.to_string())
+            .contains(&keyword.keyword)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 async fn save_atom_entries(
     db: &DbConn,
     rss_feed_id: &str,
     display_description: bool,
     feed: Feed,
+    filter_keywords: &Vec<dto::Filter>,
 ) -> Result<()> {
     future::try_join_all(
         feed.entries()
             .iter()
+            .filter(|it| filter_atom_entry(filter_keywords, it))
             .map(|it| async { save_atom_article(db, rss_feed_id, display_description, it).await }),
     )
     .await?;
@@ -256,11 +288,23 @@ pub async fn fetch_articles(db: &DbConn, id: &str) -> Result<()> {
     let content = client.get(&rss_feed.url).send().await?.bytes().await?;
 
     log::info!("feed {id} returned:\n{content:#?}");
+    let filter_keywords = filter_service::list_all(db).await?;
 
     match Feed::read_from(&content[..]) {
-        Ok(feed) => save_atom_entries(db, id, rss_feed.display_description, feed).await,
+        Ok(feed) => {
+            save_atom_entries(db, id, rss_feed.display_description, feed, &filter_keywords).await
+        }
         _ => match Channel::read_from(&content[..]) {
-            Ok(channel) => save_rss_items(db, id, rss_feed.display_description, channel).await,
+            Ok(channel) => {
+                save_rss_items(
+                    db,
+                    id,
+                    rss_feed.display_description,
+                    channel,
+                    &filter_keywords,
+                )
+                .await
+            }
             _ => Err(anyhow!("No Atom or RSS feed found for {id}")),
         },
     }?;
