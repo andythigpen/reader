@@ -4,6 +4,7 @@ mod m20220101_000001_add_rss_feed;
 mod m20230607_234558_add_article;
 mod m20230617_192327_add_category;
 mod m20230624_175704_periodic_tasks;
+mod m20241207_200312_add_filter;
 
 pub struct Migrator;
 
@@ -15,6 +16,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20230607_234558_add_article::Migration),
             Box::new(m20230617_192327_add_category::Migration),
             Box::new(m20230624_175704_periodic_tasks::Migration),
+            Box::new(m20241207_200312_add_filter::Migration),
         ]
     }
 }

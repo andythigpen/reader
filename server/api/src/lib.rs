@@ -1,6 +1,7 @@
 mod article;
 mod category;
 mod error;
+mod filter;
 mod pagination;
 mod rss_feed;
 
@@ -123,6 +124,7 @@ async fn start() -> Result<()> {
         .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()))
         .nest("/api/articles", article::router(state.clone()))
         .nest("/api/categories", category::router(state.clone()))
+        .nest("/api/filters", filter::router(state.clone()))
         .nest("/api/rss_feeds", rss_feed::router(state.clone()));
 
     let sock_addr = SocketAddr::from((

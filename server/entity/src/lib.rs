@@ -4,5 +4,6 @@ pub mod prelude;
 
 pub mod article;
 pub mod category;
+pub mod filter;
 pub mod rss_feed;
 pub mod rss_feed_category;

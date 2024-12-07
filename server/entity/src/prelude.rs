@@ -2,5 +2,6 @@
 
 pub use super::article::Entity as Article;
 pub use super::category::Entity as Category;
+pub use super::filter::Entity as Filter;
 pub use super::rss_feed::Entity as RssFeed;
 pub use super::rss_feed_category::Entity as RssFeedCategory;
