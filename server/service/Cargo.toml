@@ -17,6 +17,7 @@ futures = "0.3.28"
 log = "0.4.18"
 nanoid = "0.4.0"
 readability = { version = "0.2.0", features = ["reqwest"] }
+regex = "1.11.1"
 reqwest = "0.11.18"
 rss = "2.0.4"
 sea-orm = { version = "^0" }

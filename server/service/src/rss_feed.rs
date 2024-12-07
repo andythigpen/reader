@@ -9,6 +9,7 @@ use entity::{
 };
 use futures::future;
 use nanoid::nanoid;
+use regex::Regex;
 use reqwest::Url;
 use rss::{Channel, Item};
 use sea_orm::{
@@ -208,16 +209,10 @@ async fn save_atom_article(
     .map_err(|e| anyhow!(e))
 }
 
-fn filter_rss_article(keywords: &Vec<dto::Filter>, item: &Item) -> bool {
-    for keyword in keywords {
-        if item.title().unwrap_or("").contains(&keyword.keyword) {
-            return false;
-        }
-        if item.description().unwrap_or("").contains(&keyword.keyword) {
-            return false;
-        }
-    }
-    return true;
+fn filter_rss_article(patterns: &Vec<Regex>, item: &Item) -> bool {
+    !patterns.iter().any(|p| {
+        p.is_match(item.title().unwrap_or("")) || p.is_match(item.description().unwrap_or(""))
+    })
 }
 
 async fn save_rss_items(
@@ -225,13 +220,13 @@ async fn save_rss_items(
     rss_feed_id: &str,
     display_description: bool,
     channel: Channel,
-    filter_keywords: &Vec<dto::Filter>,
+    patterns: &Vec<Regex>,
 ) -> Result<()> {
     future::try_join_all(
         channel
             .items()
             .iter()
-            .filter(|it| filter_rss_article(&filter_keywords, it))
+            .filter(|it| filter_rss_article(&patterns, it))
             .map(|it| async { save_rss_article(db, rss_feed_id, display_description, it).await }),
     )
     .await?;
@@ -239,20 +234,10 @@ async fn save_rss_items(
     Ok(())
 }
 
-fn filter_atom_entry(keywords: &Vec<dto::Filter>, item: &Entry) -> bool {
-    for keyword in keywords {
-        if item.title().contains(&keyword.keyword) {
-            return false;
-        }
-        if item
-            .summary()
-            .map_or("".to_string(), |s| s.to_string())
-            .contains(&keyword.keyword)
-        {
-            return false;
-        }
-    }
-    return true;
+fn filter_atom_entry(patterns: &Vec<Regex>, item: &Entry) -> bool {
+    !patterns
+        .iter()
+        .any(|p| p.is_match(item.title()) || p.is_match(item.summary().map_or("", |s| &s)))
 }
 
 async fn save_atom_entries(
@@ -260,12 +245,12 @@ async fn save_atom_entries(
     rss_feed_id: &str,
     display_description: bool,
     feed: Feed,
-    filter_keywords: &Vec<dto::Filter>,
+    patterns: &Vec<Regex>,
 ) -> Result<()> {
     future::try_join_all(
         feed.entries()
             .iter()
-            .filter(|it| filter_atom_entry(filter_keywords, it))
+            .filter(|it| filter_atom_entry(patterns, it))
             .map(|it| async { save_atom_article(db, rss_feed_id, display_description, it).await }),
     )
     .await?;
@@ -288,22 +273,17 @@ pub async fn fetch_articles(db: &DbConn, id: &str) -> Result<()> {
     let content = client.get(&rss_feed.url).send().await?.bytes().await?;
 
     log::info!("feed {id} returned:\n{content:#?}");
-    let filter_keywords = filter_service::list_all(db).await?;
+    let filters = filter_service::list_all(db)
+        .await?
+        .iter()
+        .filter_map(|f| Regex::new(&f.pattern).ok())
+        .collect();
 
     match Feed::read_from(&content[..]) {
-        Ok(feed) => {
-            save_atom_entries(db, id, rss_feed.display_description, feed, &filter_keywords).await
-        }
+        Ok(feed) => save_atom_entries(db, id, rss_feed.display_description, feed, &filters).await,
         _ => match Channel::read_from(&content[..]) {
             Ok(channel) => {
-                save_rss_items(
-                    db,
-                    id,
-                    rss_feed.display_description,
-                    channel,
-                    &filter_keywords,
-                )
-                .await
+                save_rss_items(db, id, rss_feed.display_description, channel, &filters).await
             }
             _ => Err(anyhow!("No Atom or RSS feed found for {id}")),
         },

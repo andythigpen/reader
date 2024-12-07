@@ -3,25 +3,25 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CreateFilter {
-    pub keyword: String,
+    pub pattern: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct UpdateFilter {
-    pub keyword: String,
+    pub pattern: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Filter {
     pub id: String,
-    pub keyword: String,
+    pub pattern: String,
 }
 
 impl From<filter::Model> for Filter {
     fn from(value: filter::Model) -> Self {
         Self {
             id: value.id,
-            keyword: value.keyword,
+            pattern: value.pattern,
         }
     }
 }

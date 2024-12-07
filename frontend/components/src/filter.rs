@@ -90,7 +90,7 @@ pub fn filter(&Props { id }: &Props) -> Html {
             <Modal display={*display_delete_modal} onclose={close_delete_modal.clone()}>
                 <h1 class={classes!("text-xl", "mb-4")}>{"Delete Filter"}</h1>
 
-                <p class={classes!("m-4")}>{model.keyword.clone()}</p>
+                <p class={classes!("m-4")}>{model.pattern.clone()}</p>
 
                 <div class={classes!("flex", "flex-row", "justify-end", "gap-1")}>
                     <Button onclick={close_delete_modal}>{"Cancel"}</Button>
@@ -98,7 +98,7 @@ pub fn filter(&Props { id }: &Props) -> Html {
                 </div>
             </Modal>
             <div class={classes!("flex", "flex-col", "flex-1")}>
-                <h2 class={classes!("dark:text-white", "text-lg")}>{model.keyword.clone()}</h2>
+                <h2 class={classes!("dark:text-white", "text-lg")}>{model.pattern.clone()}</h2>
             </div>
             <div class={classes!("flex", "flex-row", "items-center", "gap-4")}>
                 <a onclick={edit}>

@@ -26,7 +26,7 @@ pub fn filter_form(props: &Props) -> Html {
             .to_owned()
             .unwrap_or(Filter {
                 id: "".to_string(),
-                keyword: "".to_string(),
+                pattern: "".to_string(),
             })
             .clone()
     });
@@ -45,12 +45,12 @@ pub fn filter_form(props: &Props) -> Html {
         let model = model.clone();
         Callback::from(move |_| onclose.emit(ModalAction::Confirm((*model).to_owned())))
     };
-    let blur_keyword = {
+    let blur_pattern = {
         let model = model.clone();
         Callback::from(move |e: FocusEvent| {
             let input: HtmlInputElement = e.target_unchecked_into();
             model.set(Filter {
-                keyword: input.value(),
+                pattern: input.value(),
                 ..(*model).clone()
             });
         })
@@ -60,7 +60,7 @@ pub fn filter_form(props: &Props) -> Html {
         <>
             <h1 class={classes!("text-xl", "mb-4")}>{action}{" Filter"}</h1>
 
-            <InputText name="keyword" label="Keyword" value={model.keyword.clone()} onblur={blur_keyword} />
+            <InputText name="pattern" label="Pattern" value={model.pattern.clone()} onblur={blur_pattern} />
 
             <div class={classes!("flex", "flex-row", "justify-end", "gap-1")}>
                 <Button onclick={cancel}>{"Cancel"}</Button>

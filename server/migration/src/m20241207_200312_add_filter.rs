@@ -12,7 +12,7 @@ impl MigrationTrait for Migration {
                     .table(Filter::Table)
                     .if_not_exists()
                     .col(ColumnDef::new(Filter::Id).string().not_null().primary_key())
-                    .col(ColumnDef::new(Filter::Keyword).string().not_null())
+                    .col(ColumnDef::new(Filter::Pattern).string().not_null())
                     .to_owned(),
             )
             .await
@@ -29,5 +29,5 @@ impl MigrationTrait for Migration {
 enum Filter {
     Table,
     Id,
-    Keyword,
+    Pattern,
 }
