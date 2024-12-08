@@ -1,10 +1,10 @@
-FROM rust:1.78 as chef
+FROM rust:1.70 as chef
 
 ARG TAILWIND_VERSION=v3.3.2
 
 RUN rustup target add wasm32-unknown-unknown
-RUN cargo install cargo-chef@0.1.68
-RUN cargo install trunk@0.21.4
+RUN cargo install --locked cargo-chef@0.1.54
+RUN cargo install --locked trunk@0.18.8
 RUN wget -q -O /bin/tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/download/$TAILWIND_VERSION/tailwindcss-linux-x64 && \
     chmod a+x /bin/tailwindcss
 WORKDIR app
