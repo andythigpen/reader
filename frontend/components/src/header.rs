@@ -1,6 +1,8 @@
 use gloo_net::http::Request;
+use gloo_timers::future::TimeoutFuture;
 use router::Route;
 use stores::article::ArticleStore;
+use wasm_bindgen_futures::spawn_local;
 use web_sys::window;
 use yew::prelude::*;
 use yew_router::prelude::*;
@@ -13,6 +15,20 @@ use crate::icons::funnel::IconFunnel;
 use crate::icons::tag::IconTag;
 use crate::icons::x_mark::IconXMark;
 use crate::icons::{bars_3::IconBars3, rss::IconRss};
+
+fn scroll_to_top() {
+    if let Some(window) = window() {
+        window.scroll_with_x_and_y(0.0, 0.0);
+        if let Some(document) = window.document() {
+            if let Some(html) = document.document_element() {
+                html.set_scroll_top(0);
+            }
+            if let Some(body) = document.body() {
+                body.set_scroll_top(0);
+            }
+        }
+    }
+}
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
@@ -37,7 +53,14 @@ pub fn header(Props { children }: &Props) -> Html {
                 let resp = Request::post("/api/rss_feeds/fetch").send().await.unwrap();
                 if resp.ok() {
                     state.reload().await;
-                    window().unwrap().scroll_with_x_and_y(0.0, 0.0);
+                    // Defer scrolling until after the DOM has had a chance to
+                    // re-render with the refreshed articles. Mobile Chrome in
+                    // particular seems to ignore synchronous window.scrollTo()
+                    // calls made before the new content is painted.
+                    spawn_local(async move {
+                        TimeoutFuture::new(0).await;
+                        scroll_to_top();
+                    });
                 }
                 refreshing.set(false);
             })
