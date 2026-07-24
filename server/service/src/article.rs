@@ -9,8 +9,8 @@ use readability::extractor;
 use reqwest::Url;
 use sea_orm::{
     sea_query::{Expr, IntoCondition},
-    ColumnTrait, DbConn, DbErr, EntityTrait, JoinType, PaginatorTrait, QueryFilter, QueryOrder,
-    QuerySelect, RelationTrait,
+    ColumnTrait, ConnectionTrait, DbConn, DbErr, EntityTrait, JoinType, PaginatorTrait,
+    QueryFilter, QueryOrder, QuerySelect, RelationTrait,
 };
 use time::{format_description::well_known::Iso8601, OffsetDateTime};
 use tokio::task;
@@ -82,7 +82,10 @@ pub async fn list_by_page_and_category(
         .collect())
 }
 
-pub async fn delete_by_rss_feed_id(db: &DbConn, rss_feed_id: &str) -> Result<()> {
+pub async fn delete_by_rss_feed_id<C: ConnectionTrait>(
+    db: &C,
+    rss_feed_id: &str,
+) -> Result<()> {
     Article::delete_many()
         .filter(Column::RssFeedId.eq(rss_feed_id))
         .exec(db)

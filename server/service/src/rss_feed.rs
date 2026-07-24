@@ -89,19 +89,19 @@ pub async fn delete_by_id(db: &DbConn, id: &str) -> Result<()> {
     // remove from all categories
     RSSFeedCategory::delete_many()
         .filter(rss_feed_category::Column::RssFeedId.eq(id))
-        .exec(db)
+        .exec(&txn)
         .await?;
 
     // remove all articles
-    article_service::delete_by_rss_feed_id(db, id).await?;
+    article_service::delete_by_rss_feed_id(&txn, id).await?;
 
     // remove the feed
     let rss_feed: rss_feed::ActiveModel = RSSFeed::find_by_id(id)
-        .one(db)
+        .one(&txn)
         .await?
         .ok_or(DbErr::Custom("Cannot find RSS feed.".to_owned()))
         .map(Into::into)?;
-    rss_feed.delete(db).await?;
+    rss_feed.delete(&txn).await?;
 
     txn.commit().await?;
 
