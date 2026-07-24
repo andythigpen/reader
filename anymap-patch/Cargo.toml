@@ -1,0 +1,7 @@
+[package]
+name = "anymap"
+version = "1.0.0-beta.2"
+edition = "2021"
+
+[dependencies]
+anymap2 = "0.13"

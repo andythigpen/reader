@@ -14,5 +14,8 @@ members = [
     "server/service"
 ]
 
+[patch.crates-io]
+anymap = { path = "anymap-patch" }
+
 [profile.release]
 lto = true
