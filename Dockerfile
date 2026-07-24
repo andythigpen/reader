@@ -1,10 +1,10 @@
-FROM rust:1.70 as chef
+FROM rust:1.91 as chef
 
-ARG TAILWIND_VERSION=v3.3.2
+ARG TAILWIND_VERSION=v3.4.17
 
 RUN rustup target add wasm32-unknown-unknown
-RUN cargo install --locked cargo-chef@0.1.54
-RUN cargo install --locked trunk@0.18.8
+RUN cargo install --locked cargo-chef@0.1.71
+RUN cargo install --locked trunk@0.21.0
 RUN wget -q -O /bin/tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/download/$TAILWIND_VERSION/tailwindcss-linux-x64 && \
     chmod a+x /bin/tailwindcss
 WORKDIR app
@@ -15,13 +15,14 @@ RUN cargo chef prepare --recipe-path recipe.json
 
 FROM chef as builder
 COPY --from=planner /app/recipe.json recipe.json
+COPY anymap-patch anymap-patch
 RUN cargo chef cook --release --recipe-path recipe.json
 
 COPY . .
 RUN cargo build --release --bin server
 RUN cd frontend && trunk build --release
 
-FROM gcr.io/distroless/cc-debian11
+FROM gcr.io/distroless/cc-debian12
 COPY --from=builder /app/target/release/server /server
 COPY --from=builder /app/dist/ /dist
 CMD ["/server"]

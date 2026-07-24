@@ -87,7 +87,7 @@ pub fn rss_feed(&Props { id }: &Props) -> Html {
         })
     };
 
-    let format = format_description::parse("[year]-[month]-[day]").unwrap();
+    let format = format_description::parse_owned::<1>("[year]-[month]-[day]").unwrap();
     let created_at = OffsetDateTime::parse(&model.created_at, &Iso8601::DEFAULT)
         .unwrap()
         .format(&format)

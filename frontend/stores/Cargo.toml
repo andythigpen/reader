@@ -10,7 +10,7 @@ path = "src/lib.rs"
 [dependencies]
 dto = { path = "../../dto" }
 gloo-net = "0.2.6"
-serde = "1.0.164"
-wasm-bindgen-futures = "0.4.36"
+serde = "1.0.217"
+wasm-bindgen-futures = "0.4.45"
 yew = { version = "0.20.0", features = ["csr"] }
 yewdux = "0.9.3"

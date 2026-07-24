@@ -9,5 +9,5 @@ name = "dto"
 path = "src/lib.rs"
 
 [dependencies]
-serde = { version = "1.0.163", features = ["derive"] }
+serde = { version = "1.0.217", features = ["derive"] }
 entity = { path = "../server/entity" }

@@ -11,7 +11,7 @@ pub struct Props {
 
 #[function_component(Date)]
 pub fn date(props: &Props) -> Html {
-    let format = format_description::parse("[year]-[month]-[day] [hour]:[minute]").unwrap();
+    let format = format_description::parse_owned::<1>("[year]-[month]-[day] [hour]:[minute]").unwrap();
     let date = OffsetDateTime::parse(&props.value, &Iso8601::DEFAULT)
         .unwrap()
         .format(&format)

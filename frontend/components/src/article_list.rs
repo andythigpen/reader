@@ -62,7 +62,7 @@ pub fn article_list(props: &Props) -> Html {
                     let callback = Closure::<
                         dyn Fn(Vec<IntersectionObserverEntry>, IntersectionObserver),
                     >::wrap(Box::new(
-                        move |entries, _observer| {
+                        move |entries: Vec<IntersectionObserverEntry>, _observer| {
                             if let Some(entry) = entries.first() {
                                 if entry.is_intersecting() {
                                     spawn_local(async move {
@@ -76,9 +76,11 @@ pub fn article_list(props: &Props) -> Html {
                             }
                         },
                     ));
+                    let options = IntersectionObserverInit::new();
+                    options.set_root_margin("200px");
                     if let Ok(o) = IntersectionObserver::new_with_options(
                         callback.as_ref().dyn_ref().unwrap(),
-                        IntersectionObserverInit::new().root_margin("200px"),
+                        &options,
                     ) {
                         o.observe(&elem);
                         cb = Some(callback);

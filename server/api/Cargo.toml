@@ -9,19 +9,19 @@ name = "api"
 path = "src/lib.rs"
 
 [dependencies]
-anyhow = "1.0.71"
-axum = "0.6.18"
-clap = { version = "4.3.1", features = ["derive"] }
+anyhow = "1.0.95"
+axum = "0.6.20"
+clap = { version = "4.5.27", features = ["derive"] }
 dto = { path = "../../dto" }
 entity = { path = "../entity" }
-log = "0.4.18"
+log = "0.4.25"
 migration = { path = "../migration" }
-sea-orm = { version = "^0", features = [ "sqlx-sqlite", "runtime-tokio-rustls", "macros" ] }
-serde = { version = "1.0.163", features = ["derive"] }
-serde_json = "1.0.96"
+sea-orm = { version = "^1.1", features = [ "sqlx-sqlite", "runtime-tokio-rustls", "macros" ] }
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.134"
 service = { path = "../service" }
-tokio = { version = "1.28.2", features = ["full"] }
+tokio = { version = "1.43.0", features = ["full"] }
 tower = { version = "0.4.13", features = ["timeout", "load-shed", "limit"] }
-tower-http = { version = "0.4.0", features = ["full"] }
-tracing = "0.1.37"
-tracing-subscriber = "0.3.17"
+tower-http = { version = "0.4.4", features = ["full"] }
+tracing = "0.1.41"
+tracing-subscriber = "0.3.19"
