@@ -4,7 +4,7 @@ ARG TAILWIND_VERSION=v3.4.17
 
 RUN rustup target add wasm32-unknown-unknown
 RUN cargo install --locked cargo-chef@0.1.71
-RUN cargo install --locked trunk@0.21.0
+RUN cargo install --locked trunk@0.21.14
 RUN wget -q -O /bin/tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/download/$TAILWIND_VERSION/tailwindcss-linux-x64 && \
     chmod a+x /bin/tailwindcss
 WORKDIR app
@@ -22,7 +22,7 @@ COPY . .
 RUN cargo build --release --bin server
 RUN cd frontend && trunk build --release
 
-FROM gcr.io/distroless/cc-debian12
+FROM gcr.io/distroless/cc-debian13
 COPY --from=builder /app/target/release/server /server
 COPY --from=builder /app/dist/ /dist
 CMD ["/server"]
