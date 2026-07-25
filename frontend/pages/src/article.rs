@@ -1,7 +1,7 @@
 use components::{
     date::Date, footer::Footer, header::Header, icons::loading::IconLoading,
     page_container::PageContainer, page_content::PageContent,
-    readability_article::ReadabilityArticle,
+    readability_article::ReadabilityArticle, scroll::scroll_to_top,
 };
 use stores::article::ArticleStore;
 use yew::prelude::*;
@@ -16,6 +16,14 @@ pub struct Props {
 pub fn article(props: &Props) -> Html {
     let article_store = use_store_value::<ArticleStore>();
     let id = props.id.clone();
+
+    use_effect_with_deps(
+        move |_| {
+            scroll_to_top();
+            || ()
+        },
+        id.clone(),
+    );
     let fallback = {
         let article = article_store.by_article_id(&props.id);
         let title = article.as_ref().map(|a| a.title.clone());

@@ -28,3 +28,4 @@ pub mod rss_feed_category;
 pub mod rss_feed_category_list;
 pub mod rss_feed_form;
 pub mod rss_feed_list;
+pub mod scroll;

@@ -8,6 +8,7 @@ use yew::{
 };
 
 use crate::date::Date;
+use crate::scroll::scroll_to_top;
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
@@ -36,6 +37,14 @@ pub fn readability_article(props: &Props) -> HtmlResult {
     let title = article.title.clone();
     let pub_date = article.pub_date.clone();
     let url = article.url.clone();
+
+    use_effect_with_deps(
+        move |_| {
+            scroll_to_top();
+            || ()
+        },
+        (),
+    );
 
     let node = use_memo(
         |(article,)| {
