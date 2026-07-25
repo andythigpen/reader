@@ -38,6 +38,7 @@ pub async fn create(db: &DbConn, data: dto::CreateRssFeed) -> Result<dto::RssFee
         abbreviation: Set(data.abbreviation.to_owned()),
         update_interval_mins: Set(data.update_interval_mins as i32),
         next_update: Set(Some(now.to_owned())),
+        link_directly: Set(data.link_directly),
     }
     .insert(db)
     .await
@@ -79,6 +80,7 @@ pub async fn update_by_id(db: &DbConn, id: &str, data: dto::UpdateRssFeed) -> Re
     rss_feed.color = Set(data.color);
     rss_feed.abbreviation = Set(data.abbreviation);
     rss_feed.update_interval_mins = Set(data.update_interval_mins as i32);
+    rss_feed.link_directly = Set(data.link_directly);
     let model = rss_feed.update(db).await.map_err(|e| anyhow!(e))?;
     Ok(model.into())
 }

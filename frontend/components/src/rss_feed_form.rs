@@ -38,6 +38,7 @@ pub fn rss_feed_form(props: &Props) -> Html {
                 abbreviation: "".to_string(),
                 color: "#6590D5".to_string(),
                 update_interval_mins: 360,
+                link_directly: false,
             })
             .clone()
     });
@@ -126,6 +127,16 @@ pub fn rss_feed_form(props: &Props) -> Html {
             });
         })
     };
+    let change_link_directly = {
+        let model = model.clone();
+        Callback::from(move |e: Event| {
+            let input: HtmlInputElement = e.target_unchecked_into();
+            model.set(RssFeed {
+                link_directly: input.checked(),
+                ..(*model).clone()
+            });
+        })
+    };
 
     html! {
         <div class={classes!("relative", "flex", "flex-col", "gap-4", "max-h-[calc(100vh-6rem-2.5rem-1rem)]")}>
@@ -143,6 +154,9 @@ pub fn rss_feed_form(props: &Props) -> Html {
 
                 <InputCheckbox name="display_description" label="Display article descriptions"
                     checked={model.display_description} onchange={change_display_description} />
+
+                <InputCheckbox name="link_directly" label="Link directly to article"
+                    checked={model.link_directly} onchange={change_link_directly} />
             </div>
 
             <div class={classes!("flex-0", "flex", "flex-row", "justify-end", "gap-1")}>

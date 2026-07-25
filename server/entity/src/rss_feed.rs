@@ -18,6 +18,7 @@ pub struct Model {
     pub color: String,
     pub next_update: Option<String>,
     pub update_interval_mins: i32,
+    pub link_directly: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -31,7 +31,10 @@ pub fn article(&Props { id }: &Props) -> Html {
     let abbreviation = rss_feed
         .as_ref()
         .map_or("".to_string(), |r| r.abbreviation.to_uppercase());
-    let thumb_color = rss_feed.map_or("#475569".to_string(), |r| r.color.clone());
+    let thumb_color = rss_feed
+        .as_ref()
+        .map_or("#475569".to_string(), |r| r.color.clone());
+    let link_directly = rss_feed.as_ref().map_or(false, |r| r.link_directly);
 
     html! {
         <ListItem>
@@ -39,13 +42,23 @@ pub fn article(&Props { id }: &Props) -> Html {
                 <ListItemThumb text={abbreviation} color={thumb_color} />
             </Link<Route>>
             <div class={classes!("flex", "flex-col", "md:flex-row", "flex-1", "md:items-center", "justify-between")}>
-                <Link<Route> to={Route::ReadabilityArticle{ id: article.id.clone() }}>
-                    <h2 class={classes!("text-lg", "dark:text-white")}>
-                        {article.title.clone()}
-                    </h2>
-                    <span class={classes!("text-sm")}>{"Published on "}{rss_feed_name}{" at "}<Date value={article.pub_date.clone()}/></span>
-                    <p>{article.description.clone()}</p>
-                </Link<Route>>
+                if link_directly {
+                    <a href={article.url.clone()} target={"_blank"} rel={"noopener noreferrer"} class={classes!("flex", "flex-col", "flex-1")}>
+                        <h2 class={classes!("text-lg", "dark:text-white")}>
+                            {article.title.clone()}
+                        </h2>
+                        <span class={classes!("text-sm")}>{"Published on "}{rss_feed_name}{" at "}<Date value={article.pub_date.clone()}/></span>
+                        <p>{article.description.clone()}</p>
+                    </a>
+                } else {
+                    <Link<Route> to={Route::ReadabilityArticle{ id: article.id.clone() }} classes={classes!("flex", "flex-col", "flex-1")}>
+                        <h2 class={classes!("text-lg", "dark:text-white")}>
+                            {article.title.clone()}
+                        </h2>
+                        <span class={classes!("text-sm")}>{"Published on "}{rss_feed_name}{" at "}<Date value={article.pub_date.clone()}/></span>
+                        <p>{article.description.clone()}</p>
+                    </Link<Route>>
+                }
                 <div class={classes!("flex", "flex-row", "flex-0", "mr-4", "mt-2", "gap-4")} >
                     if let Some(comments_url) = &article.comments_url {
                         <a href={comments_url.clone()} target={"_blank"} rel={"noopener noreferrer"} class={classes!(
@@ -55,12 +68,14 @@ pub fn article(&Props { id }: &Props) -> Html {
                             <span class={"md:hidden"}>{"Comments"}</span>
                         </a>
                     }
-                    <a href={article.url.clone()} target={"_blank"} rel={"noopener noreferrer"} class={classes!(
-                        "flex", "flex-row", "gap-1"
-                    )}>
-                        <IconArrowTopRight />
-                        <span class={"md:hidden"}>{"Article"}</span>
-                    </a>
+                    if !link_directly {
+                        <a href={article.url.clone()} target={"_blank"} rel={"noopener noreferrer"} class={classes!(
+                            "flex", "flex-row", "gap-1"
+                        )}>
+                            <IconArrowTopRight />
+                            <span class={"md:hidden"}>{"Article"}</span>
+                        </a>
+                    }
                 </div>
             </div>
         </ListItem>
