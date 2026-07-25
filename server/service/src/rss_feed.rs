@@ -274,7 +274,7 @@ pub async fn fetch_articles(db: &DbConn, id: &str) -> Result<()> {
         .build()?;
     let content = client.get(&rss_feed.url).send().await?.bytes().await?;
 
-    log::info!("feed {id} returned:\n{content:#?}");
+    log::debug!("feed {id} returned:\n{content:#?}");
     let filters = filter_service::list_all(db)
         .await?
         .iter()
@@ -330,15 +330,11 @@ pub async fn fetch_all_articles(db: &DbConn) -> Result<()> {
         .all(db)
         .await?;
 
-    let results = future::join_all(
-        rss_feeds
-            .iter()
-            .map(|(id,)| async move {
-                fetch_articles(db, id)
-                    .await
-                    .map_err(|e| anyhow!("feed {id}: {e}"))
-            }),
-    )
+    let results = future::join_all(rss_feeds.iter().map(|(id,)| async move {
+        fetch_articles(db, id)
+            .await
+            .map_err(|e| anyhow!("feed {id}: {e}"))
+    }))
     .await;
 
     aggregate_errors(results.into_iter().filter_map(|r| r.err()).collect())
@@ -354,15 +350,11 @@ pub async fn fetch_periodic_articles(db: &DbConn) -> Result<()> {
         .all(db)
         .await?;
 
-    let results = future::join_all(
-        rss_feeds
-            .iter()
-            .map(|(id,)| async move {
-                fetch_articles(db, id)
-                    .await
-                    .map_err(|e| anyhow!("feed {id}: {e}"))
-            }),
-    )
+    let results = future::join_all(rss_feeds.iter().map(|(id,)| async move {
+        fetch_articles(db, id)
+            .await
+            .map_err(|e| anyhow!("feed {id}: {e}"))
+    }))
     .await;
 
     aggregate_errors(results.into_iter().filter_map(|r| r.err()).collect())
