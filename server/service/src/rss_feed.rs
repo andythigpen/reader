@@ -305,6 +305,23 @@ pub async fn fetch_articles(db: &DbConn, id: &str) -> Result<()> {
     Ok(())
 }
 
+fn aggregate_errors(errors: Vec<anyhow::Error>) -> Result<()> {
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        let summary = errors
+            .iter()
+            .map(|e| e.to_string())
+            .collect::<Vec<_>>()
+            .join("; ");
+        Err(anyhow!(
+            "failed to refresh {} RSS feed(s): {}",
+            errors.len(),
+            summary
+        ))
+    }
+}
+
 pub async fn fetch_all_articles(db: &DbConn) -> Result<()> {
     let rss_feeds: Vec<(String,)> = RSSFeed::find()
         .select_only()
@@ -313,9 +330,18 @@ pub async fn fetch_all_articles(db: &DbConn) -> Result<()> {
         .all(db)
         .await?;
 
-    future::try_join_all(rss_feeds.iter().map(|(id,)| fetch_articles(db, id))).await?;
+    let results = future::join_all(
+        rss_feeds
+            .iter()
+            .map(|(id,)| async move {
+                fetch_articles(db, id)
+                    .await
+                    .map_err(|e| anyhow!("feed {id}: {e}"))
+            }),
+    )
+    .await;
 
-    Ok(())
+    aggregate_errors(results.into_iter().filter_map(|r| r.err()).collect())
 }
 
 pub async fn fetch_periodic_articles(db: &DbConn) -> Result<()> {
@@ -328,9 +354,18 @@ pub async fn fetch_periodic_articles(db: &DbConn) -> Result<()> {
         .all(db)
         .await?;
 
-    future::try_join_all(rss_feeds.iter().map(|(id,)| fetch_articles(db, id))).await?;
+    let results = future::join_all(
+        rss_feeds
+            .iter()
+            .map(|(id,)| async move {
+                fetch_articles(db, id)
+                    .await
+                    .map_err(|e| anyhow!("feed {id}: {e}"))
+            }),
+    )
+    .await;
 
-    Ok(())
+    aggregate_errors(results.into_iter().filter_map(|r| r.err()).collect())
 }
 
 pub async fn add_to_category(db: &DbConn, id: &str, category_id: &str) -> Result<()> {
